@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "POS Platform"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Log in to manage your business",
+    "registerTitle": "Create your account",
+    "registerSubtitle": "Set up your business in a few minutes",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "onboarding": {
+    "title": "Set up your business",
+    "step1Title": "What kind of business do you run?",
+    "step1Subtitle": "We'll tailor categories and features to match",
+    "step2Title": "Tell us about your business",
+    "step2Subtitle": "You can change this any time in Settings",
+    "businessName": "Business name",
+    "country": "Country",
+    "currency": "Currency",
+    "timezone": "Timezone",
+    "language": "Language",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Start using POS Platform"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "How is {business} doing today?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "somethingWentWrong": "Something went wrong. Please try again."
+  }
+}

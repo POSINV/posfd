@@ -1,0 +1,174 @@
+/* Self-hosted so billing keeps working on a flaky shop-floor connection -
+   no runtime dependency on Google Fonts. */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+
+:root {
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lifted: 0 8px 24px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.06);
+  /* Standard "ease-out" curve used by Linear/Raycast-style interfaces -
+     fast to start, gentle to settle. Prefer this over the browser's
+     default `ease` everywhere motion is added. */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html,
+body,
+.v-application {
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.v-application .text-h4,
+.v-application .text-h5,
+.v-application .text-h6 {
+  letter-spacing: -0.01em;
+}
+
+/* Subtle, premium elevation used in place of Vuetify's default heavy
+   material shadows - consistent across every bordered card. */
+.v-card.v-card--variant-elevated,
+.v-card[class*='border'] {
+  transition:
+    box-shadow 0.2s var(--ease-smooth),
+    transform 0.2s var(--ease-smooth),
+    border-color 0.2s var(--ease-standard);
+}
+
+.hover-lift:hover {
+  box-shadow: var(--shadow-lifted);
+  transform: translateY(-2px);
+}
+
+/* ---- Refined, accessible keyboard focus (replaces the harsh default
+   browser outline) - only shows for keyboard navigation, not mouse
+   clicks, via :focus-visible. ---- */
+:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  border-radius: 6px;
+  transition: outline-offset 0.15s var(--ease-standard);
+}
+
+.v-btn:focus-visible,
+.v-chip:focus-visible,
+.v-list-item:focus-visible,
+.v-card:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ---- Buttons: quick, soft feedback instead of an abrupt state swap. ---- */
+.v-btn {
+  transition:
+    transform 0.15s var(--ease-standard),
+    box-shadow 0.15s var(--ease-standard),
+    background-color 0.15s var(--ease-standard),
+    opacity 0.15s var(--ease-standard) !important;
+}
+
+.v-btn:not(.v-btn--disabled):not(.v-btn--icon):hover {
+  transform: translateY(-1px);
+}
+
+.v-btn:not(.v-btn--disabled):active {
+  transform: scale(0.97);
+}
+
+.v-btn--variant-flat:not(.v-btn--disabled) {
+  box-shadow: var(--shadow-soft);
+}
+
+.v-btn--variant-flat:not(.v-btn--disabled):hover {
+  box-shadow: var(--shadow-lifted);
+}
+
+/* ---- Icon buttons: a soft circular hover instead of Vuetify's default
+   sharper state layer, closer to Linear/Raycast's toolbar icons. ---- */
+.v-btn--icon {
+  transition:
+    background-color 0.15s var(--ease-standard),
+    transform 0.15s var(--ease-standard) !important;
+}
+
+.v-btn--icon:not(.v-btn--disabled):hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.06);
+}
+
+/* ---- List items / rows: smooth background instead of an instant flash. ---- */
+.v-list-item {
+  transition: background-color 0.15s var(--ease-standard) !important;
+}
+
+/* ---- Chips ---- */
+.v-chip {
+  transition:
+    transform 0.15s var(--ease-standard),
+    box-shadow 0.15s var(--ease-standard) !important;
+}
+
+/* ---- Page transition (App.vue) - the shell (nav/app bar) never
+   re-renders on navigation; only this fades, so switching pages feels
+   like one continuous app rather than a reload. ---- */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.18s var(--ease-standard),
+    transform 0.18s var(--ease-standard);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.28);
+  background-clip: content-box;
+}
+
+::selection {
+  background: rgba(79, 70, 229, 0.22);
+}
+
+@media print {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

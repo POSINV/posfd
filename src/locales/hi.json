@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "POS प्लेटफ़ॉर्म"
+  },
+  "auth": {
+    "login": "लॉग इन करें",
+    "logout": "लॉग आउट",
+    "register": "खाता बनाएं",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "fullName": "पूरा नाम",
+    "loginTitle": "वापसी पर स्वागत है",
+    "loginSubtitle": "अपना व्यवसाय प्रबंधित करने के लिए लॉग इन करें",
+    "registerTitle": "अपना खाता बनाएं",
+    "registerSubtitle": "कुछ ही मिनटों में अपना व्यवसाय सेट करें",
+    "noAccount": "खाता नहीं है?",
+    "haveAccount": "पहले से ही खाता है?",
+    "invalidCredentials": "अमान्य ईमेल या पासवर्ड"
+  },
+  "onboarding": {
+    "title": "अपना व्यवसाय सेट करें",
+    "step1Title": "आप किस प्रकार का व्यवसाय चलाते हैं?",
+    "step1Subtitle": "हम श्रेणियां और सुविधाएं आपके अनुसार तैयार करेंगे",
+    "step2Title": "अपने व्यवसाय के बारे में बताएं",
+    "step2Subtitle": "आप इसे सेटिंग्स में कभी भी बदल सकते हैं",
+    "businessName": "व्यवसाय का नाम",
+    "country": "देश",
+    "currency": "मुद्रा",
+    "timezone": "समय क्षेत्र",
+    "language": "भाषा",
+    "back": "वापस",
+    "continue": "जारी रखें",
+    "finish": "POS प्लेटफ़ॉर्म का उपयोग शुरू करें"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "आज {business} कैसा चल रहा है?"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "somethingWentWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
+  }
+}

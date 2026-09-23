@@ -1,11 +1,24 @@
-<script setup></script>
+<script setup>
+import { useRoute } from 'vue-router'
+import AppShell from '@/components/layout/AppShell.vue'
+
+const route = useRoute()
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <v-app>
+    <AppShell v-if="route.meta.layout === 'app'">
+      <RouterView v-slot="{ Component, route: r }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" :key="r.path" />
+        </Transition>
+      </RouterView>
+    </AppShell>
 
-<style scoped></style>
+    <RouterView v-else v-slot="{ Component, route: r }">
+      <Transition name="page" mode="out-in">
+        <component :is="Component" :key="r.path" />
+      </Transition>
+    </RouterView>
+  </v-app>
+</template>
