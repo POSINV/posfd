@@ -82,7 +82,10 @@ async function confirmCancel() {
         <v-card class="pa-6 mb-6" border>
           <div class="d-flex align-center justify-space-between mb-4">
             <div>
-              <div class="text-h6 font-weight-bold">{{ invoice.invoice_number }}</div>
+              <div class="text-h6 font-weight-bold d-flex align-center ga-2">
+                {{ invoice.invoice_number }}
+                <v-chip v-if="invoice.source === 'migrated'" size="small" color="info" variant="tonal">Migrated</v-chip>
+              </div>
               <div class="text-caption text-medium-emphasis">
                 {{ new Date(invoice.issued_at).toLocaleString() }} · {{ invoice.customer?.name || 'Walk-in' }}
               </div>
@@ -212,7 +215,13 @@ async function confirmCancel() {
     <v-dialog v-model="cancelDialogOpen" max-width="420">
       <v-card class="pa-4">
         <v-card-title class="font-weight-bold">Cancel this invoice?</v-card-title>
-        <v-card-text>Stock for its items will be restored. This cannot be undone.</v-card-text>
+        <v-card-text>
+          <template v-if="invoice?.source === 'migrated'">
+            This is a migrated historical invoice - it never affected current stock, so cancelling
+            it won't change stock either. This cannot be undone.
+          </template>
+          <template v-else>Stock for its items will be restored. This cannot be undone.</template>
+        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="cancelDialogOpen = false">Back</v-btn>

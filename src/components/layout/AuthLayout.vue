@@ -1,4 +1,6 @@
 <script setup>
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher.vue'
+
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
@@ -7,6 +9,9 @@ defineProps({
 
 <template>
   <v-main class="auth-layout">
+    <div class="auth-language-switcher">
+      <LanguageSwitcher />
+    </div>
     <v-container class="fill-height" max-width="480">
       <div class="w-100">
         <div class="text-center mb-8">
@@ -29,5 +34,13 @@ defineProps({
 .auth-layout {
   background: rgb(var(--v-theme-background));
   min-height: 100vh;
+  position: relative;
+}
+
+.auth-language-switcher {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
 }
 </style>

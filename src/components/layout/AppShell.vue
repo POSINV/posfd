@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -19,6 +20,7 @@ const navItems = [
   { title: 'Categories', icon: 'mdi-shape-outline', to: { name: 'categories' } },
   { title: 'Customers', icon: 'mdi-account-outline', to: { name: 'customers' } },
   { title: 'Reports', icon: 'mdi-chart-line', to: { name: 'reports' } },
+  { title: 'Bulk Import', icon: 'mdi-file-upload-outline', to: { name: 'imports' } },
 ]
 
 // The four most-used destinations on a phone, plus a "More" sheet for
@@ -55,6 +57,8 @@ async function logout() {
     </v-app-bar-title>
 
     <v-spacer />
+
+    <LanguageSwitcher :compact="mobile" class="mr-1" />
 
     <v-menu>
       <template #activator="{ props }">

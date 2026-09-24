@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import client, { apiErrorMessage } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
+import { setLocale } from '@/plugins/i18n'
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -26,11 +28,14 @@ const currencies = ['INR', 'USD', 'EUR', 'GBP', 'AED']
 const timezones = ['Asia/Kolkata', 'Asia/Dubai', 'America/New_York', 'Europe/London', 'UTC']
 const languages = [
   { title: 'English', value: 'en' },
-  { title: 'Hindi', value: 'hi' },
-  { title: 'Tamil', value: 'ta' },
-  { title: 'Telugu', value: 'te' },
-  { title: 'Malayalam', value: 'ml' },
-  { title: 'Kannada', value: 'kn' },
+  { title: 'Hindi (हिन्दी)', value: 'hi' },
+  { title: 'Tamil (தமிழ்)', value: 'ta' },
+  { title: 'Telugu (తెలుగు)', value: 'te' },
+  { title: 'Malayalam (മലയാളം)', value: 'ml' },
+  { title: 'Marathi (मराठी)', value: 'mr' },
+  { title: 'Gujarati (ગુજરાતી)', value: 'gu' },
+  { title: 'Bengali (বাংলা)', value: 'bn' },
+  { title: 'Kannada (ಕನ್ನಡ)', value: 'kn' },
 ]
 
 onMounted(async () => {
@@ -73,7 +78,10 @@ async function finish() {
 <template>
   <v-main class="onboarding-page">
     <v-container max-width="720" class="py-10">
-      <h1 class="text-h5 font-weight-bold mb-1">{{ t('onboarding.title') }}</h1>
+      <div class="d-flex justify-space-between align-center mb-1">
+        <h1 class="text-h5 font-weight-bold">{{ t('onboarding.title') }}</h1>
+        <LanguageSwitcher />
+      </div>
 
       <v-card class="mt-6 pa-6" border>
         <template v-if="step === 1">
@@ -123,7 +131,13 @@ async function finish() {
                 <v-select id="onboarding-timezone" v-model="timezone" :items="timezones" :label="t('onboarding.timezone')" />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-select id="onboarding-language" v-model="language" :items="languages" :label="t('onboarding.language')" />
+                <v-select
+                  id="onboarding-language"
+                  v-model="language"
+                  :items="languages"
+                  :label="t('onboarding.language')"
+                  @update:model-value="setLocale"
+                />
               </v-col>
             </v-row>
 

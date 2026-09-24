@@ -80,7 +80,10 @@ function paymentColor(s) {
           >
             <div class="d-flex justify-space-between align-start">
               <div>
-                <div class="font-weight-medium">{{ invoice.invoice_number }}</div>
+                <div class="font-weight-medium d-flex align-center ga-1">
+                  {{ invoice.invoice_number }}
+                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">Migrated</v-chip>
+                </div>
                 <div class="text-caption text-medium-emphasis">
                   {{ invoice.customer?.name || 'Walk-in' }} ·
                   {{ new Date(invoice.issued_at).toLocaleDateString() }}
@@ -120,7 +123,12 @@ function paymentColor(s) {
               style="cursor: pointer"
               @click="$router.push({ name: 'invoice-detail', params: { id: invoice.id } })"
             >
-              <td class="font-weight-medium">{{ invoice.invoice_number }}</td>
+              <td class="font-weight-medium">
+                <div class="d-flex align-center ga-1">
+                  {{ invoice.invoice_number }}
+                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">Migrated</v-chip>
+                </div>
+              </td>
               <td>{{ invoice.customer?.name || 'Walk-in' }}</td>
               <td>{{ new Date(invoice.issued_at).toLocaleString() }}</td>
               <td>{{ invoice.currency }} {{ invoice.total_amount }}</td>

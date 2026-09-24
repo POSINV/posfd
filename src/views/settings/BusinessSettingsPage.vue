@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { BusinessesApi } from '@/api/businesses'
 import { apiErrorMessage } from '@/api/client'
+import { SUPPORTED_LOCALES, setLocale } from '@/plugins/i18n'
 
 const auth = useAuthStore()
 
@@ -32,6 +33,7 @@ const form = ref({
 
 const currencies = ['INR', 'USD', 'EUR', 'GBP', 'AED']
 const timezones = ['Asia/Kolkata', 'Asia/Dubai', 'America/New_York', 'Europe/London', 'UTC']
+const languages = SUPPORTED_LOCALES.map((l) => ({ title: l.label, value: l.code }))
 
 const paperWidths = [
   { title: '58mm thermal roll', value: '58mm' },
@@ -134,7 +136,13 @@ async function save() {
               <v-select id="settings-timezone-select" v-model="form.timezone" :items="timezones" label="Timezone" />
             </v-col>
             <v-col cols="12" sm="4">
-              <v-text-field id="settings-language-input" v-model="form.language" label="Language code" hint="e.g. en, hi" />
+              <v-select
+                id="settings-language-select"
+                v-model="form.language"
+                :items="languages"
+                label="Language"
+                @update:model-value="setLocale"
+              />
             </v-col>
           </v-row>
         </v-card>
@@ -191,7 +199,15 @@ async function save() {
           </v-row>
         </v-card>
 
-        <div class="d-flex justify-end">
+        <div class="d-flex justify-space-between align-center">
+          <v-btn
+            id="view-audit-log-link"
+            variant="text"
+            prepend-icon="mdi-shield-search-outline"
+            :to="{ name: 'audit-log' }"
+          >
+            View Audit Log
+          </v-btn>
           <v-btn id="save-settings-btn" type="submit" color="primary" :loading="saving">Save Settings</v-btn>
         </div>
       </v-form>

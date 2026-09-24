@@ -98,6 +98,18 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
     },
     {
+      path: '/imports',
+      name: 'imports',
+      component: () => import('@/views/imports/ImportPage.vue'),
+      meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
+    },
+    {
+      path: '/settings/audit-log',
+      name: 'audit-log',
+      component: () => import('@/views/settings/AuditLogPage.vue'),
+      meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundPage.vue'),

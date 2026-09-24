@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "POS પ્લેટફોર્મ"
+  },
+  "auth": {
+    "login": "લૉગ ઇન કરો",
+    "logout": "લૉગ આઉટ કરો",
+    "register": "ખાતું બનાવો",
+    "email": "ઈમેલ",
+    "password": "પાસવર્ડ",
+    "fullName": "પૂરું નામ",
+    "loginTitle": "ફરી સ્વાગત છે",
+    "loginSubtitle": "તમારો બિઝનેસ મેનેજ કરવા માટે લૉગ ઇન કરો",
+    "registerTitle": "તમારું ખાતું બનાવો",
+    "registerSubtitle": "તમારો બિઝનેસ થોડી મિનિટોમાં સેટ કરો",
+    "noAccount": "ખાતું નથી?",
+    "haveAccount": "પહેલેથી ખાતું છે?",
+    "invalidCredentials": "અમાન્ય ઈમેલ અથવા પાસવર્ડ"
+  },
+  "onboarding": {
+    "title": "તમારો બિઝનેસ સેટ કરો",
+    "step1Title": "તમે કયા પ્રકારનો બિઝનેસ ચલાવો છો?",
+    "step1Subtitle": "તે મુજબ અમે કેટેગરી અને સુવિધાઓ તૈયાર કરીશું",
+    "step2Title": "તમારા બિઝનેસ વિશે અમને જણાવો",
+    "step2Subtitle": "તમે આ કોઈપણ સમયે સેટિંગ્સમાં બદલી શકો છો",
+    "businessName": "બિઝનેસનું નામ",
+    "country": "દેશ",
+    "currency": "કરન્સી",
+    "timezone": "ટાઇમ ઝોન",
+    "language": "ભાષા",
+    "back": "પાછળ",
+    "continue": "આગળ વધો",
+    "finish": "POS પ્લેટફોર્મનો ઉપયોગ કરવાનું શરૂ કરો"
+  },
+  "dashboard": {
+    "title": "ડેશબોર્ડ",
+    "welcome": "આજે {business} કેવો ચાલી રહ્યો છે?"
+  },
+  "common": {
+    "loading": "લોડ થઈ રહ્યું છે...",
+    "somethingWentWrong": "કંઈક ખોટું થયું. કૃપા કરી ફરી પ્રયાસ કરો."
+  }
+}
