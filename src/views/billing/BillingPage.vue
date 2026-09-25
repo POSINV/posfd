@@ -4,6 +4,7 @@ import { useDisplay } from 'vuetify'
 import { useProductsStore } from '@/stores/products'
 import { CustomersApi } from '@/api/customers'
 import { BillingApi } from '@/api/billing'
+import { LoyaltyApi } from '@/api/loyalty'
 import { apiErrorMessage } from '@/api/client'
 import CartPanel from '@/components/billing/CartPanel.vue'
 
@@ -20,6 +21,8 @@ const customers = ref([])
 const customerId = ref(null)
 const paymentMethod = ref('cash')
 const paymentAmount = ref('')
+const redeemPoints = ref('')
+const loyaltyProgram = ref(null)
 
 const submitting = ref(false)
 const errorMessage = ref('')
@@ -36,6 +39,7 @@ onMounted(async () => {
     if (!store.categoriesLoaded) await store.fetchCategories()
     await runSearch()
     customers.value = await CustomersApi.list({})
+    loyaltyProgram.value = await LoyaltyApi.getProgram()
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
   }
@@ -98,6 +102,10 @@ async function completeSale() {
     idempotency_key: idempotencyKey,
   }
 
+  if (Number(redeemPoints.value) > 0) {
+    payload.redeem_points = Number(redeemPoints.value)
+  }
+
   if (Number(paymentAmount.value) > 0) {
     payload.payments = [{ method: paymentMethod.value, amount: paymentAmount.value }]
   }
@@ -118,6 +126,7 @@ function resetCart() {
   customerId.value = null
   paymentMethod.value = 'cash'
   paymentAmount.value = ''
+  redeemPoints.value = ''
   idempotencyKey = crypto.randomUUID()
   mobileCartOpen.value = false
 }
@@ -204,9 +213,11 @@ function startNewSale() {
               v-model:customer-id="customerId"
               v-model:payment-method="paymentMethod"
               v-model:payment-amount="paymentAmount"
+              v-model:redeem-points="redeemPoints"
               :customers="customers"
               :submitting="submitting"
               :error-message="errorMessage"
+              :loyalty-program="loyaltyProgram"
               @complete-sale="completeSale"
             />
           </v-card>
@@ -237,9 +248,11 @@ function startNewSale() {
           v-model:customer-id="customerId"
           v-model:payment-method="paymentMethod"
           v-model:payment-amount="paymentAmount"
+          v-model:redeem-points="redeemPoints"
           :customers="customers"
           :submitting="submitting"
           :error-message="errorMessage"
+          :loyalty-program="loyaltyProgram"
           @complete-sale="completeSale"
         />
       </v-card>
@@ -250,7 +263,12 @@ function startNewSale() {
         <v-icon icon="mdi-check-circle" color="success" size="48" class="mb-3" />
         <div class="text-h6 font-weight-bold">Sale Complete</div>
         <div class="text-body-2 text-medium-emphasis mb-4">Invoice {{ receipt.invoice_number }}</div>
-        <div class="text-h5 font-weight-bold mb-4">{{ receipt.currency }} {{ receipt.total_amount }}</div>
+        <div class="text-h5 font-weight-bold mb-2">{{ receipt.currency }} {{ receipt.total_amount }}</div>
+        <div v-if="receipt.loyalty_points_earned > 0 || receipt.loyalty_points_redeemed > 0" class="text-caption text-medium-emphasis mb-4">
+          <span v-if="receipt.loyalty_points_redeemed > 0">Redeemed {{ receipt.loyalty_points_redeemed }} points ({{ receipt.currency }} {{ receipt.loyalty_discount_amount }} off)</span>
+          <span v-if="receipt.loyalty_points_redeemed > 0 && receipt.loyalty_points_earned > 0"> &middot; </span>
+          <span v-if="receipt.loyalty_points_earned > 0">Earned {{ receipt.loyalty_points_earned }} points</span>
+        </div>
         <v-btn
           variant="tonal"
           prepend-icon="mdi-printer-outline"

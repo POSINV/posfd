@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { CustomersApi } from '@/api/customers'
 import { BillingApi } from '@/api/billing'
+import { LoyaltyApi } from '@/api/loyalty'
 import { apiErrorMessage } from '@/api/client'
 
 const props = defineProps({ id: { type: String, required: true } })
@@ -9,8 +10,11 @@ const props = defineProps({ id: { type: String, required: true } })
 const customer = ref(null)
 const summary = ref(null)
 const invoices = ref([])
+const loyalty = ref(null)
 const loading = ref(true)
 const errorMessage = ref('')
+
+const entryTypeLabels = { earn: 'Earned', redeem: 'Redeemed', bonus: 'Bonus', expire: 'Expired', adjustment: 'Adjusted' }
 
 const segmentColors = { vip: 'purple', high_value: 'primary', regular: 'success', new: 'info', inactive: 'default' }
 const segmentLabels = { vip: 'VIP', high_value: 'High value', regular: 'Regular', new: 'New', inactive: 'Inactive' }
@@ -21,14 +25,16 @@ async function load() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [customerData, summaryData, invoicesData] = await Promise.all([
+    const [customerData, summaryData, invoicesData, loyaltyData] = await Promise.all([
       CustomersApi.get(props.id),
       CustomersApi.summary(props.id),
       BillingApi.listInvoices({ customer_id: props.id }),
+      LoyaltyApi.getLedger(props.id, { page_size: 10 }),
     ])
     customer.value = customerData
     summary.value = summaryData
     invoices.value = invoicesData.data
+    loyalty.value = loyaltyData
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
   } finally {
@@ -124,6 +130,33 @@ async function load() {
           </v-card>
         </v-col>
       </v-row>
+
+      <template v-if="loyalty">
+        <div class="d-flex align-center justify-space-between mb-3">
+          <div class="text-subtitle-1 font-weight-bold">Loyalty Points</div>
+          <v-chip color="primary" variant="tonal">{{ loyalty.balance }} points</v-chip>
+        </div>
+        <v-card border class="mb-6">
+          <div v-if="!loyalty.data.length" class="pa-8 text-center text-body-2 text-medium-emphasis">
+            No loyalty activity yet.
+          </div>
+          <v-list v-else lines="two">
+            <v-list-item v-for="entry in loyalty.data" :key="entry.id">
+              <v-list-item-title>
+                {{ entryTypeLabels[entry.entry_type] || entry.entry_type }}
+                <span v-if="entry.invoice_number"> &middot; {{ entry.invoice_number }}</span>
+              </v-list-item-title>
+              <v-list-item-subtitle>{{ new Date(entry.inserted_at).toLocaleString() }}</v-list-item-subtitle>
+              <template #append>
+                <span class="font-weight-medium mr-3" :class="entry.points > 0 ? 'text-success' : 'text-error'">
+                  {{ entry.points > 0 ? '+' : '' }}{{ entry.points }}
+                </span>
+                <span class="text-body-2 text-medium-emphasis">bal {{ entry.balance_after }}</span>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </template>
 
       <div class="text-subtitle-1 font-weight-bold mb-3">Recent Bills</div>
       <v-card border>

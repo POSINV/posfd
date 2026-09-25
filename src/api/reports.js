@@ -11,4 +11,6 @@ export const ReportsApi = {
     client
       .get('/reports/stock', { params: { low_stock_only: lowStockOnly } })
       .then((r) => r.data.data),
+  loyalty: (from, to) =>
+    client.get('/reports/loyalty', { params: { from, to } }).then((r) => r.data.data),
 }

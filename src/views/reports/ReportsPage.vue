@@ -16,6 +16,7 @@ const dailySales = ref([])
 const topProducts = ref([])
 const stockItems = ref([])
 const lowStockOnly = ref(false)
+const loyalty = ref(null)
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -28,14 +29,16 @@ async function loadAll() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [summaryResult, dailyResult, topProductsResult] = await Promise.all([
+    const [summaryResult, dailyResult, topProductsResult, loyaltyResult] = await Promise.all([
       ReportsApi.salesSummary(range.value.from, range.value.to),
       ReportsApi.dailySales(range.value.from, range.value.to),
       ReportsApi.topProducts(range.value.from, range.value.to),
+      ReportsApi.loyalty(range.value.from, range.value.to),
     ])
     summary.value = summaryResult
     dailySales.value = dailyResult
     topProducts.value = topProductsResult
+    loyalty.value = loyaltyResult
     await loadStock()
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
@@ -126,6 +129,19 @@ function currency(amount) {
                   </tr>
                 </tbody>
               </v-table>
+            </v-card>
+
+            <v-card v-if="loyalty && (loyalty.points_earned > 0 || loyalty.points_redeemed > 0)" class="pa-4 mt-6" border>
+              <div class="text-subtitle-1 font-weight-bold mb-3">Loyalty</div>
+              <div class="d-flex justify-space-between text-body-2 mb-1">
+                <span>Points earned</span><span>{{ loyalty.points_earned }}</span>
+              </div>
+              <div class="d-flex justify-space-between text-body-2 mb-1">
+                <span>Points redeemed</span><span>{{ loyalty.points_redeemed }}</span>
+              </div>
+              <div class="d-flex justify-space-between text-body-2">
+                <span>Active members</span><span>{{ loyalty.active_members }}</span>
+              </div>
             </v-card>
           </v-col>
 

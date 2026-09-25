@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { BusinessesApi } from '@/api/businesses'
+import { LoyaltyApi } from '@/api/loyalty'
 import { apiErrorMessage } from '@/api/client'
 import { SUPPORTED_LOCALES, setLocale } from '@/plugins/i18n'
 
@@ -58,12 +59,23 @@ const printLayouts = [
   { title: 'A4 invoice', value: 'a4' },
 ]
 
+const loyaltyForm = ref(null)
+const loyaltyActive = ref(false)
+const loyaltySaving = ref(false)
+const loyaltyErrorMessage = ref('')
+const loyaltySavedMessage = ref('')
+
 onMounted(load)
 
 async function load() {
   loading.value = true
   try {
-    const business = await BusinessesApi.get(auth.currentBusinessId)
+    const [business, program] = await Promise.all([
+      BusinessesApi.get(auth.currentBusinessId),
+      LoyaltyApi.getProgram(),
+    ])
+    loyaltyForm.value = program
+    loyaltyActive.value = program.active
     form.value = {
       name: business.name,
       currency: business.currency,
@@ -106,6 +118,23 @@ async function save() {
     }
   } finally {
     saving.value = false
+  }
+}
+
+async function saveLoyalty() {
+  loyaltySaving.value = true
+  loyaltyErrorMessage.value = ''
+  loyaltySavedMessage.value = ''
+
+  try {
+    const program = await LoyaltyApi.updateProgram(loyaltyForm.value)
+    loyaltyForm.value = program
+    loyaltyActive.value = program.active
+    loyaltySavedMessage.value = 'Loyalty program saved.'
+  } catch (error) {
+    loyaltyErrorMessage.value = apiErrorMessage(error)
+  } finally {
+    loyaltySaving.value = false
   }
 }
 </script>
@@ -211,5 +240,71 @@ async function save() {
           <v-btn id="save-settings-btn" type="submit" color="primary" :loading="saving">Save Settings</v-btn>
         </div>
       </v-form>
+
+      <v-card v-if="loyaltyForm" class="pa-6 mb-6 mt-6" border>
+        <div class="d-flex align-center justify-space-between mb-3">
+          <div class="text-subtitle-1 font-weight-bold">Loyalty Program</div>
+          <v-chip v-if="loyaltyForm.enabled && !loyaltyActive" size="small" color="warning" variant="tonal">
+            Enabled but not on your plan
+          </v-chip>
+        </div>
+        <p class="text-caption text-medium-emphasis mb-3">
+          Reward repeat customers with points they earn on every bill and redeem for a discount
+          on a future one.
+        </p>
+
+        <v-alert v-if="loyaltyErrorMessage" type="error" variant="tonal" class="mb-3">{{ loyaltyErrorMessage }}</v-alert>
+        <v-alert v-if="loyaltySavedMessage" type="success" variant="tonal" class="mb-3">{{ loyaltySavedMessage }}</v-alert>
+
+        <v-switch
+          id="loyalty-enabled-switch"
+          v-model="loyaltyForm.enabled"
+          label="Enable loyalty points"
+          color="primary"
+          hide-details
+          class="mb-3"
+        />
+
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-text-field
+              id="loyalty-earn-amount-input"
+              v-model="loyaltyForm.earn_amount_per_point"
+              label="Amount spent to earn 1 point"
+              hint="e.g. 100 = customers earn 1 point per ₹100 spent"
+              persistent-hint
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-text-field
+              id="loyalty-redeem-value-input"
+              v-model="loyaltyForm.redeem_value_per_point"
+              label="Value of 1 point when redeemed"
+              hint="e.g. 0.5 = each point is worth ₹0.5 off a bill"
+              persistent-hint
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-text-field
+              id="loyalty-min-redeem-input"
+              v-model="loyaltyForm.min_redeem_points"
+              label="Minimum points required to redeem"
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-text-field
+              id="loyalty-max-redemption-input"
+              v-model="loyaltyForm.max_redemption_percentage"
+              label="Max % of a bill payable with points"
+            />
+          </v-col>
+        </v-row>
+
+        <div class="d-flex justify-end">
+          <v-btn id="save-loyalty-btn" color="primary" :loading="loyaltySaving" @click="saveLoyalty">
+            Save Loyalty Settings
+          </v-btn>
+        </div>
+      </v-card>
     </v-container>
 </template>
