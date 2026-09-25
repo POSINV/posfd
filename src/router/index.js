@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAdminStore } from '@/stores/admin'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,6 +61,13 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
     },
     {
+      path: '/customers/:id',
+      name: 'customer-detail',
+      component: () => import('@/views/customers/CustomerDetailPage.vue'),
+      meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
+      props: true,
+    },
+    {
       path: '/billing',
       name: 'billing',
       component: () => import('@/views/billing/BillingPage.vue'),
@@ -110,6 +118,27 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
     },
     {
+      path: '/subscription',
+      name: 'subscription',
+      component: () => import('@/views/subscription/SubscriptionPage.vue'),
+      meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
+    },
+    // Platform-admin routes (Phase 2 §13/§45) - a completely separate
+    // login/auth domain from the tenant app above, so they're guarded
+    // below by useAdminStore(), never useAuthStore().
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('@/views/admin/AdminLoginPage.vue'),
+      meta: { adminGuestOnly: true },
+    },
+    {
+      path: '/admin',
+      name: 'admin-dashboard',
+      component: () => import('@/views/admin/AdminDashboardPage.vue'),
+      meta: { requiresAdminAuth: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundPage.vue'),
@@ -118,6 +147,24 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  if (to.path.startsWith('/admin')) {
+    const admin = useAdminStore()
+
+    if (!admin.ready) {
+      await admin.initialize()
+    }
+
+    if (to.meta.requiresAdminAuth && !admin.isAuthenticated) {
+      return { name: 'admin-login', query: { redirect: to.fullPath } }
+    }
+
+    if (to.meta.adminGuestOnly && admin.isAuthenticated) {
+      return { name: 'admin-dashboard' }
+    }
+
+    return true
+  }
+
   const auth = useAuthStore()
 
   if (!auth.ready) {

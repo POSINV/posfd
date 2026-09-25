@@ -2,6 +2,8 @@ import client from '@/api/client'
 
 export const CustomersApi = {
   list: (params) => client.get('/customers', { params }).then((r) => r.data.data),
+  get: (id) => client.get(`/customers/${id}`).then((r) => r.data.data),
+  summary: (id) => client.get(`/customers/${id}/summary`).then((r) => r.data.data),
   create: (attrs) => client.post('/customers', { customer: attrs }).then((r) => r.data.data),
   update: (id, attrs) =>
     client.patch(`/customers/${id}`, { customer: attrs }).then((r) => r.data.data),

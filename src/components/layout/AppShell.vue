@@ -1,15 +1,18 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useSubscriptionStore } from '@/stores/subscription'
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher.vue'
+import TrialBanner from '@/components/subscription/TrialBanner.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+const subscription = useSubscriptionStore()
 const { mobile } = useDisplay()
 
 const navItems = [
@@ -21,7 +24,11 @@ const navItems = [
   { title: 'Customers', icon: 'mdi-account-outline', to: { name: 'customers' } },
   { title: 'Reports', icon: 'mdi-chart-line', to: { name: 'reports' } },
   { title: 'Bulk Import', icon: 'mdi-file-upload-outline', to: { name: 'imports' } },
+  { title: 'Subscription', icon: 'mdi-credit-card-outline', to: { name: 'subscription' } },
 ]
+
+onMounted(() => subscription.refresh())
+watch(() => auth.currentBusinessId, () => subscription.refresh())
 
 // The four most-used destinations on a phone, plus a "More" sheet for
 // everything else - a shop owner billing from their phone shouldn't have
@@ -108,6 +115,7 @@ async function logout() {
   </v-navigation-drawer>
 
   <v-main :class="{ 'pb-16': mobile }">
+    <TrialBanner />
     <slot />
   </v-main>
 

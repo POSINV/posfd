@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import client, { setAuthToken, setCurrentBusinessId } from '@/api/client'
+import { useSubscriptionStore } from '@/stores/subscription'
 
 const TOKEN_KEY = 'posfd:token'
 const BUSINESS_ID_KEY = 'posfd:business_id'
@@ -80,6 +81,7 @@ export const useAuthStore = defineStore('auth', {
         this._applyCurrentBusiness(null)
         this.user = null
         this.businesses = []
+        useSubscriptionStore().reset()
       }
     },
 
