@@ -20,6 +20,9 @@ const activateTarget = ref(null)
 const activateForm = ref({ plan_id: null, payment_provider: 'manual', provider_reference: '', notes: '' })
 const activating = ref(false)
 
+const pendingTemplates = ref([])
+const reviewingId = ref(null)
+
 const summaryCards = [
   { key: 'trialing', title: 'On Trial', color: 'info' },
   { key: 'trial_ending_soon', title: 'Trial Ending Soon', color: 'warning' },
@@ -49,14 +52,16 @@ async function load() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [countsData, businessesData, plansData] = await Promise.all([
+    const [countsData, businessesData, plansData, templatesData] = await Promise.all([
       AdminApi.dashboard(),
       AdminApi.businesses(statusFilter.value),
       AdminApi.plans(),
+      AdminApi.whatsappTemplates(),
     ])
     counts.value = countsData
     businesses.value = businessesData
     plans.value = plansData
+    pendingTemplates.value = templatesData
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
   } finally {
@@ -100,6 +105,41 @@ async function cancelSubscription(row) {
     await load()
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
+  }
+}
+
+async function approveTemplate(template) {
+  const providerTemplateName = prompt(
+    `Provider template name for "${template.name}" (the exact name registered with Meta):`,
+    template.name,
+  )
+  if (!providerTemplateName) return
+
+  reviewingId.value = template.id
+  errorMessage.value = ''
+  try {
+    await AdminApi.approveWhatsappTemplate(template.id, providerTemplateName)
+    pendingTemplates.value = pendingTemplates.value.filter((t) => t.id !== template.id)
+  } catch (error) {
+    errorMessage.value = apiErrorMessage(error)
+  } finally {
+    reviewingId.value = null
+  }
+}
+
+async function rejectTemplate(template) {
+  const reason = prompt(`Reason for rejecting "${template.name}":`)
+  if (!reason) return
+
+  reviewingId.value = template.id
+  errorMessage.value = ''
+  try {
+    await AdminApi.rejectWhatsappTemplate(template.id, reason)
+    pendingTemplates.value = pendingTemplates.value.filter((t) => t.id !== template.id)
+  } catch (error) {
+    errorMessage.value = apiErrorMessage(error)
+  } finally {
+    reviewingId.value = null
   }
 }
 
@@ -198,6 +238,40 @@ async function logout() {
                 </tr>
               </tbody>
             </v-table>
+          </v-card>
+
+          <v-card border class="mt-6">
+            <div class="pa-4 text-subtitle-1 font-weight-bold">WhatsApp Templates Pending Review</div>
+            <div v-if="!pendingTemplates.length" class="pa-8 text-center text-body-2 text-medium-emphasis">
+              Nothing waiting on review.
+            </div>
+            <v-list v-else lines="three">
+              <v-list-item v-for="t in pendingTemplates" :key="t.id">
+                <v-list-item-title>{{ t.business.name }} &middot; {{ t.name }} ({{ t.language }}/{{ t.category }})</v-list-item-title>
+                <v-list-item-subtitle>{{ t.body }}</v-list-item-subtitle>
+                <template #append>
+                  <v-btn
+                    size="small"
+                    variant="tonal"
+                    color="success"
+                    class="mr-1"
+                    :loading="reviewingId === t.id"
+                    @click="approveTemplate(t)"
+                  >
+                    Approve
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    variant="tonal"
+                    color="error"
+                    :loading="reviewingId === t.id"
+                    @click="rejectTemplate(t)"
+                  >
+                    Reject
+                  </v-btn>
+                </template>
+              </v-list-item>
+            </v-list>
           </v-card>
         </template>
       </v-container>

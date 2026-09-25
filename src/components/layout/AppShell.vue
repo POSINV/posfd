@@ -25,6 +25,7 @@ const navItems = [
   { title: 'Reports', icon: 'mdi-chart-line', to: { name: 'reports' } },
   { title: 'Bulk Import', icon: 'mdi-file-upload-outline', to: { name: 'imports' } },
   { title: 'Subscription', icon: 'mdi-credit-card-outline', to: { name: 'subscription' } },
+  { title: 'WhatsApp', icon: 'mdi-whatsapp', to: { name: 'whatsapp' } },
 ]
 
 onMounted(() => subscription.refresh())

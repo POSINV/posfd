@@ -20,4 +20,13 @@ export const AdminApi = {
       .then((r) => r.data.data),
   cancelSubscription: (businessId) =>
     adminClient.post(`/admin/businesses/${businessId}/cancel_subscription`).then((r) => r.data.data),
+
+  whatsappTemplates: (status) =>
+    adminClient.get('/admin/whatsapp/templates', { params: { status } }).then((r) => r.data.data),
+  approveWhatsappTemplate: (id, providerTemplateName) =>
+    adminClient
+      .post(`/admin/whatsapp/templates/${id}/approve`, { provider_template_name: providerTemplateName })
+      .then((r) => r.data.data),
+  rejectWhatsappTemplate: (id, reason) =>
+    adminClient.post(`/admin/whatsapp/templates/${id}/reject`, { reason }).then((r) => r.data.data),
 }

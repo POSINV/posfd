@@ -123,6 +123,12 @@ const router = createRouter({
       component: () => import('@/views/subscription/SubscriptionPage.vue'),
       meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
     },
+    {
+      path: '/whatsapp',
+      name: 'whatsapp',
+      component: () => import('@/views/whatsapp/WhatsappPage.vue'),
+      meta: { requiresAuth: true, requiresOnboarding: true, layout: 'app' },
+    },
     // Platform-admin routes (Phase 2 §13/§45) - a completely separate
     // login/auth domain from the tenant app above, so they're guarded
     // below by useAdminStore(), never useAuthStore().
