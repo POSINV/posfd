@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { BusinessesApi } from '@/api/businesses'
 import { LoyaltyApi } from '@/api/loyalty'
@@ -7,6 +8,7 @@ import { apiErrorMessage } from '@/api/client'
 import { SUPPORTED_LOCALES, setLocale } from '@/plugins/i18n'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -36,28 +38,28 @@ const currencies = ['INR', 'USD', 'EUR', 'GBP', 'AED']
 const timezones = ['Asia/Kolkata', 'Asia/Dubai', 'America/New_York', 'Europe/London', 'UTC']
 const languages = SUPPORTED_LOCALES.map((l) => ({ title: l.label, value: l.code }))
 
-const paperWidths = [
-  { title: '58mm thermal roll', value: '58mm' },
-  { title: '80mm thermal roll', value: '80mm' },
-  { title: 'A5 page', value: 'a5' },
-  { title: 'A4 page', value: 'a4' },
-  { title: 'Letter', value: 'letter' },
-]
-const alignments = [
-  { title: 'Left', value: 'left' },
-  { title: 'Center', value: 'center' },
-  { title: 'Right', value: 'right' },
-]
-const fontSizes = [
-  { title: 'Small', value: 'small' },
-  { title: 'Normal', value: 'normal' },
-  { title: 'Large (easier to read)', value: 'large' },
-]
-const printLayouts = [
-  { title: 'Thermal receipt', value: 'thermal' },
-  { title: 'Compact', value: 'compact' },
-  { title: 'A4 invoice', value: 'a4' },
-]
+const paperWidths = computed(() => [
+  { title: t('settings.paperWidths.58mm'), value: '58mm' },
+  { title: t('settings.paperWidths.80mm'), value: '80mm' },
+  { title: t('settings.paperWidths.a5'), value: 'a5' },
+  { title: t('settings.paperWidths.a4'), value: 'a4' },
+  { title: t('settings.paperWidths.letter'), value: 'letter' },
+])
+const alignments = computed(() => [
+  { title: t('settings.left'), value: 'left' },
+  { title: t('settings.center'), value: 'center' },
+  { title: t('settings.right'), value: 'right' },
+])
+const fontSizes = computed(() => [
+  { title: t('settings.fontSizes.small'), value: 'small' },
+  { title: t('settings.fontSizes.normal'), value: 'normal' },
+  { title: t('settings.fontSizes.large'), value: 'large' },
+])
+const printLayouts = computed(() => [
+  { title: t('settings.printLayouts.thermal'), value: 'thermal' },
+  { title: t('settings.printLayouts.compact'), value: 'compact' },
+  { title: t('settings.printLayouts.a4'), value: 'a4' },
+])
 
 const loyaltyForm = ref(null)
 const loyaltyActive = ref(false)
@@ -109,7 +111,7 @@ async function save() {
   try {
     await BusinessesApi.update(auth.currentBusinessId, form.value)
     await auth.fetchCurrentUser()
-    savedMessage.value = 'Settings saved.'
+    savedMessage.value = t('settings.settingsSaved')
   } catch (error) {
     if (error?.response?.data?.errors) {
       formErrors.value = error.response.data.errors
@@ -130,7 +132,7 @@ async function saveLoyalty() {
     const program = await LoyaltyApi.updateProgram(loyaltyForm.value)
     loyaltyForm.value = program
     loyaltyActive.value = program.active
-    loyaltySavedMessage.value = 'Loyalty program saved.'
+    loyaltySavedMessage.value = t('settings.loyaltyProgramSaved')
   } catch (error) {
     loyaltyErrorMessage.value = apiErrorMessage(error)
   } finally {
@@ -141,9 +143,9 @@ async function saveLoyalty() {
 
 <template>
   <v-container max-width="720" class="py-8">
-      <h1 class="text-h5 font-weight-bold mb-1">Business Settings</h1>
+      <h1 class="text-h5 font-weight-bold mb-1">{{ $t('nav.businessSettings') }}</h1>
       <p class="text-body-2 text-medium-emphasis mb-6">
-        Shown on printed invoices and used throughout the app.
+        {{ $t('settings.subtitle') }}
       </p>
 
       <div v-if="loading" class="d-flex justify-center py-12">
@@ -155,21 +157,21 @@ async function saveLoyalty() {
         <v-alert v-if="savedMessage" type="success" variant="tonal" class="mb-4">{{ savedMessage }}</v-alert>
 
         <v-card class="pa-6 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">General</div>
-          <v-text-field id="settings-name-input" v-model="form.name" label="Business name" :error-messages="formErrors.name" class="mb-2" />
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('settings.general') }}</div>
+          <v-text-field id="settings-name-input" v-model="form.name" :label="$t('settings.businessName')" :error-messages="formErrors.name" class="mb-2" />
           <v-row>
             <v-col cols="12" sm="4">
-              <v-select id="settings-currency-select" v-model="form.currency" :items="currencies" label="Currency" />
+              <v-select id="settings-currency-select" v-model="form.currency" :items="currencies" :label="$t('settings.currency')" />
             </v-col>
             <v-col cols="12" sm="4">
-              <v-select id="settings-timezone-select" v-model="form.timezone" :items="timezones" label="Timezone" />
+              <v-select id="settings-timezone-select" v-model="form.timezone" :items="timezones" :label="$t('settings.timezone')" />
             </v-col>
             <v-col cols="12" sm="4">
               <v-select
                 id="settings-language-select"
                 v-model="form.language"
                 :items="languages"
-                label="Language"
+                :label="$t('onboarding.language')"
                 @update:model-value="setLocale"
               />
             </v-col>
@@ -177,53 +179,51 @@ async function saveLoyalty() {
         </v-card>
 
         <v-card class="pa-6 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">Invoice Header</div>
-          <p class="text-caption text-medium-emphasis mb-3">Printed at the top of every invoice.</p>
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('settings.invoiceHeader') }}</div>
+          <p class="text-caption text-medium-emphasis mb-3">{{ $t('settings.invoiceHeaderHint') }}</p>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field id="settings-phone-input" v-model="form.phone" label="Phone" />
+              <v-text-field id="settings-phone-input" v-model="form.phone" :label="$t('common.phone')" />
             </v-col>
             <v-col cols="12" sm="6">
-              <v-text-field id="settings-email-input" v-model="form.email" label="Email" />
+              <v-text-field id="settings-email-input" v-model="form.email" :label="$t('common.email')" />
             </v-col>
           </v-row>
-          <v-text-field id="settings-address-input" v-model="form.address" label="Address" class="mb-2" />
-          <v-text-field id="settings-tax-number-input" v-model="form.tax_number" label="Tax number (e.g. GSTIN)" />
+          <v-text-field id="settings-address-input" v-model="form.address" :label="$t('common.address')" class="mb-2" />
+          <v-text-field id="settings-tax-number-input" v-model="form.tax_number" :label="$t('settings.taxNumber')" />
         </v-card>
 
         <v-card class="pa-6 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">Invoice Numbering &amp; Footer</div>
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('settings.invoiceNumberingFooter') }}</div>
           <v-text-field
             id="settings-invoice-prefix-input"
             v-model="form.invoice_prefix"
-            label="Invoice number prefix"
-            hint="e.g. INV- produces INV-000123"
+            :label="$t('settings.invoiceNumberPrefix')"
+            :hint="$t('settings.invoiceNumberPrefixHint')"
             persistent-hint
             class="mb-4"
           />
-          <v-textarea id="settings-invoice-footer-input" v-model="form.invoice_footer" label="Footer message" rows="2" class="mb-2" />
-          <v-textarea id="settings-invoice-terms-input" v-model="form.invoice_terms" label="Terms &amp; conditions" rows="2" />
+          <v-textarea id="settings-invoice-footer-input" v-model="form.invoice_footer" :label="$t('settings.footerMessage')" rows="2" class="mb-2" />
+          <v-textarea id="settings-invoice-terms-input" v-model="form.invoice_terms" :label="$t('settings.termsAndConditions')" rows="2" />
         </v-card>
 
         <v-card class="pa-6 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">Printer &amp; Receipt Layout</div>
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('settings.printerReceiptLayout') }}</div>
           <p class="text-caption text-medium-emphasis mb-3">
-            A clothing shop usually wants a quick 80mm receipt; a clinic or pharmacy often
-            prints a fuller A4 bill with larger text. Set what fits your business - you can
-            still switch per print.
+            {{ $t('settings.printerReceiptLayoutHint') }}
           </p>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-select id="settings-print-layout-select" v-model="form.default_print_layout" :items="printLayouts" label="Default print layout" />
+              <v-select id="settings-print-layout-select" v-model="form.default_print_layout" :items="printLayouts" :label="$t('settings.defaultPrintLayout')" />
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select id="settings-paper-width-select" v-model="form.printer_paper_width" :items="paperWidths" label="Paper width" />
+              <v-select id="settings-paper-width-select" v-model="form.printer_paper_width" :items="paperWidths" :label="$t('settings.paperWidth')" />
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select id="settings-header-align-select" v-model="form.printer_header_align" :items="alignments" label="Header alignment" />
+              <v-select id="settings-header-align-select" v-model="form.printer_header_align" :items="alignments" :label="$t('settings.headerAlignment')" />
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select id="settings-font-size-select" v-model="form.printer_font_size" :items="fontSizes" label="Font size" />
+              <v-select id="settings-font-size-select" v-model="form.printer_font_size" :items="fontSizes" :label="$t('settings.fontSize')" />
             </v-col>
           </v-row>
         </v-card>
@@ -235,22 +235,21 @@ async function saveLoyalty() {
             prepend-icon="mdi-shield-search-outline"
             :to="{ name: 'audit-log' }"
           >
-            View Audit Log
+            {{ $t('settings.viewAuditLog') }}
           </v-btn>
-          <v-btn id="save-settings-btn" type="submit" color="primary" :loading="saving">Save Settings</v-btn>
+          <v-btn id="save-settings-btn" type="submit" color="primary" :loading="saving">{{ $t('settings.saveSettings') }}</v-btn>
         </div>
       </v-form>
 
       <v-card v-if="loyaltyForm" class="pa-6 mb-6 mt-6" border>
         <div class="d-flex align-center justify-space-between mb-3">
-          <div class="text-subtitle-1 font-weight-bold">Loyalty Program</div>
+          <div class="text-subtitle-1 font-weight-bold">{{ $t('settings.loyaltyProgram') }}</div>
           <v-chip v-if="loyaltyForm.enabled && !loyaltyActive" size="small" color="warning" variant="tonal">
-            Enabled but not on your plan
+            {{ $t('settings.enabledNotOnPlan') }}
           </v-chip>
         </div>
         <p class="text-caption text-medium-emphasis mb-3">
-          Reward repeat customers with points they earn on every bill and redeem for a discount
-          on a future one.
+          {{ $t('settings.loyaltyProgramHint') }}
         </p>
 
         <v-alert v-if="loyaltyErrorMessage" type="error" variant="tonal" class="mb-3">{{ loyaltyErrorMessage }}</v-alert>
@@ -259,7 +258,7 @@ async function saveLoyalty() {
         <v-switch
           id="loyalty-enabled-switch"
           v-model="loyaltyForm.enabled"
-          label="Enable loyalty points"
+          :label="$t('settings.enableLoyaltyPoints')"
           color="primary"
           hide-details
           class="mb-3"
@@ -270,8 +269,8 @@ async function saveLoyalty() {
             <v-text-field
               id="loyalty-earn-amount-input"
               v-model="loyaltyForm.earn_amount_per_point"
-              label="Amount spent to earn 1 point"
-              hint="e.g. 100 = customers earn 1 point per ₹100 spent"
+              :label="$t('settings.earnAmount')"
+              :hint="$t('settings.earnAmountHint')"
               persistent-hint
             />
           </v-col>
@@ -279,8 +278,8 @@ async function saveLoyalty() {
             <v-text-field
               id="loyalty-redeem-value-input"
               v-model="loyaltyForm.redeem_value_per_point"
-              label="Value of 1 point when redeemed"
-              hint="e.g. 0.5 = each point is worth ₹0.5 off a bill"
+              :label="$t('settings.redeemValue')"
+              :hint="$t('settings.redeemValueHint')"
               persistent-hint
             />
           </v-col>
@@ -288,21 +287,21 @@ async function saveLoyalty() {
             <v-text-field
               id="loyalty-min-redeem-input"
               v-model="loyaltyForm.min_redeem_points"
-              label="Minimum points required to redeem"
+              :label="$t('settings.minRedeemPoints')"
             />
           </v-col>
           <v-col cols="12" sm="6">
             <v-text-field
               id="loyalty-max-redemption-input"
               v-model="loyaltyForm.max_redemption_percentage"
-              label="Max % of a bill payable with points"
+              :label="$t('settings.maxRedemptionPercentage')"
             />
           </v-col>
         </v-row>
 
         <div class="d-flex justify-end">
           <v-btn id="save-loyalty-btn" color="primary" :loading="loyaltySaving" @click="saveLoyalty">
-            Save Loyalty Settings
+            {{ $t('settings.saveLoyaltySettings') }}
           </v-btn>
         </div>
       </v-card>

@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   customers: { type: Array, default: () => [] },
@@ -14,16 +17,17 @@ const customerId = defineModel('customerId', { default: null })
 const paymentMethod = defineModel('paymentMethod', { default: 'cash' })
 const paymentAmount = defineModel('paymentAmount', { default: '' })
 const redeemPoints = defineModel('redeemPoints', { default: '' })
+const offerCode = defineModel('offerCode', { default: '' })
 
 const customerSearch = ref('')
 
-const PAYMENT_METHODS = [
-  { title: 'Cash', value: 'cash' },
-  { title: 'Card', value: 'card' },
-  { title: 'UPI', value: 'upi' },
-  { title: 'Credit (pay later)', value: 'credit' },
-  { title: 'Other', value: 'other' },
-]
+const PAYMENT_METHODS = computed(() => [
+  { title: t('billing.cart.paymentMethods.cash'), value: 'cash' },
+  { title: t('billing.cart.paymentMethods.card'), value: 'card' },
+  { title: t('billing.cart.paymentMethods.upi'), value: 'upi' },
+  { title: t('billing.cart.paymentMethods.credit'), value: 'credit' },
+  { title: t('billing.cart.paymentMethods.other'), value: 'other' },
+])
 
 function removeLine(key) {
   cart.value = cart.value.filter((l) => l.key !== key)
@@ -94,7 +98,7 @@ const filteredCustomers = computed(() => {
 <template>
   <div>
     <div v-if="!cart.length" class="text-body-2 text-medium-emphasis text-center py-8">
-      Add products to start a sale.
+      {{ $t('billing.cart.empty') }}
     </div>
 
     <div v-else>
@@ -117,7 +121,7 @@ const filteredCustomers = computed(() => {
         v-model="customerId"
         v-model:search="customerSearch"
         :items="filteredCustomers.map((c) => ({ title: `${c.name}${c.phone ? ' · ' + c.phone : ''}`, value: c.id }))"
-        label="Customer (optional - walk-in)"
+        :label="$t('billing.cart.customerLabel')"
         clearable
         density="comfortable"
         class="mb-2"
@@ -130,13 +134,13 @@ const filteredCustomers = computed(() => {
         class="pa-3 mb-3"
       >
         <div class="d-flex justify-space-between text-body-2 mb-2">
-          <span>{{ selectedCustomer.name }}'s loyalty points</span>
-          <span class="font-weight-bold">{{ selectedCustomer.loyalty_points_balance }} available</span>
+          <span>{{ $t('billing.cart.loyaltyPointsFor', { name: selectedCustomer.name }) }}</span>
+          <span class="font-weight-bold">{{ $t('billing.cart.pointsAvailable', { count: selectedCustomer.loyalty_points_balance }) }}</span>
         </div>
         <v-text-field
           id="redeem-points-input"
           v-model="redeemPoints"
-          label="Redeem points"
+          :label="$t('billing.cart.redeemPoints')"
           type="number"
           min="0"
           :max="selectedCustomer.loyalty_points_balance"
@@ -145,30 +149,39 @@ const filteredCustomers = computed(() => {
           class="mb-1"
         />
         <div v-if="Number(redeemPoints) > 0" class="text-caption text-medium-emphasis mt-1">
-          ~{{ estimatedRedemptionValue.toFixed(2) }} off this bill
+          {{ $t('billing.cart.redemptionEstimate', { amount: estimatedRedemptionValue.toFixed(2) }) }}
         </div>
         <div v-if="estimatedPointsEarned > 0" class="text-caption text-medium-emphasis mt-1">
-          Earns ~{{ estimatedPointsEarned }} point(s) on this sale
+          {{ $t('billing.cart.earnEstimate', { count: estimatedPointsEarned }) }}
         </div>
       </v-card>
 
-      <v-select v-model="paymentMethod" :items="PAYMENT_METHODS" label="Payment method" density="comfortable" class="mb-2" />
-      <v-text-field v-model="paymentAmount" label="Amount received" density="comfortable" class="mb-2" />
+      <v-text-field
+        id="offer-code-input"
+        v-model="offerCode"
+        :label="$t('billing.cart.promoCode')"
+        density="comfortable"
+        clearable
+        class="mb-2"
+      />
+
+      <v-select v-model="paymentMethod" :items="PAYMENT_METHODS" :label="$t('billing.cart.paymentMethod')" density="comfortable" class="mb-2" />
+      <v-text-field v-model="paymentAmount" :label="$t('billing.cart.amountReceived')" density="comfortable" class="mb-2" />
 
       <div class="d-flex justify-space-between text-body-2">
-        <span>Subtotal</span><span>{{ subtotal.toFixed(2) }}</span>
+        <span>{{ $t('billing.cart.subtotal') }}</span><span>{{ subtotal.toFixed(2) }}</span>
       </div>
       <div v-if="discount > 0" class="d-flex justify-space-between text-body-2 text-error">
-        <span>Discount</span><span>-{{ discount.toFixed(2) }}</span>
+        <span>{{ $t('billing.cart.discount') }}</span><span>-{{ discount.toFixed(2) }}</span>
       </div>
       <div class="d-flex justify-space-between text-body-2">
-        <span>Tax</span><span>{{ tax.toFixed(2) }}</span>
+        <span>{{ $t('billing.cart.tax') }}</span><span>{{ tax.toFixed(2) }}</span>
       </div>
       <div v-if="estimatedRedemptionValue > 0" class="d-flex justify-space-between text-body-2 text-primary">
-        <span>Loyalty redemption</span><span>-{{ estimatedRedemptionValue.toFixed(2) }}</span>
+        <span>{{ $t('billing.cart.loyaltyRedemption') }}</span><span>-{{ estimatedRedemptionValue.toFixed(2) }}</span>
       </div>
       <div class="d-flex justify-space-between text-h6 font-weight-bold mt-1">
-        <span>Total</span><span>{{ total.toFixed(2) }}</span>
+        <span>{{ $t('billing.cart.total') }}</span><span>{{ total.toFixed(2) }}</span>
       </div>
 
       <v-alert v-if="errorMessage" type="error" variant="tonal" density="comfortable" class="mt-3">
@@ -184,7 +197,7 @@ const filteredCustomers = computed(() => {
         :loading="submitting"
         @click="emit('complete-sale')"
       >
-        Complete Sale
+        {{ $t('billing.cart.completeSale') }}
       </v-btn>
     </div>
   </div>

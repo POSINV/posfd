@@ -15,18 +15,19 @@ const auth = useAuthStore()
 const subscription = useSubscriptionStore()
 const { mobile } = useDisplay()
 
-const navItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', to: { name: 'dashboard' } },
-  { title: 'Billing', icon: 'mdi-point-of-sale', to: { name: 'billing' } },
-  { title: 'Invoices', icon: 'mdi-receipt-text-outline', to: { name: 'invoices' } },
-  { title: 'Products', icon: 'mdi-tag-outline', to: { name: 'products' } },
-  { title: 'Categories', icon: 'mdi-shape-outline', to: { name: 'categories' } },
-  { title: 'Customers', icon: 'mdi-account-outline', to: { name: 'customers' } },
-  { title: 'Reports', icon: 'mdi-chart-line', to: { name: 'reports' } },
-  { title: 'Bulk Import', icon: 'mdi-file-upload-outline', to: { name: 'imports' } },
-  { title: 'Subscription', icon: 'mdi-credit-card-outline', to: { name: 'subscription' } },
-  { title: 'WhatsApp', icon: 'mdi-whatsapp', to: { name: 'whatsapp' } },
-]
+const navItems = computed(() => [
+  { key: 'dashboard', title: t('nav.dashboard'), icon: 'mdi-view-dashboard-outline', to: { name: 'dashboard' } },
+  { key: 'billing', title: t('nav.billing'), icon: 'mdi-point-of-sale', to: { name: 'billing' } },
+  { key: 'invoices', title: t('nav.invoices'), icon: 'mdi-receipt-text-outline', to: { name: 'invoices' } },
+  { key: 'products', title: t('nav.products'), icon: 'mdi-tag-outline', to: { name: 'products' } },
+  { key: 'categories', title: t('nav.categories'), icon: 'mdi-shape-outline', to: { name: 'categories' } },
+  { key: 'customers', title: t('nav.customers'), icon: 'mdi-account-outline', to: { name: 'customers' } },
+  { key: 'reports', title: t('nav.reports'), icon: 'mdi-chart-line', to: { name: 'reports' } },
+  { key: 'imports', title: t('nav.bulkImport'), icon: 'mdi-file-upload-outline', to: { name: 'imports' } },
+  { key: 'subscription', title: t('nav.subscription'), icon: 'mdi-credit-card-outline', to: { name: 'subscription' } },
+  { key: 'whatsapp', title: t('nav.whatsapp'), icon: 'mdi-whatsapp', to: { name: 'whatsapp' } },
+  { key: 'offers', title: t('nav.offers'), icon: 'mdi-sale', to: { name: 'offers' } },
+])
 
 onMounted(() => subscription.refresh())
 watch(() => auth.currentBusinessId, () => subscription.refresh())
@@ -34,7 +35,8 @@ watch(() => auth.currentBusinessId, () => subscription.refresh())
 // The four most-used destinations on a phone, plus a "More" sheet for
 // everything else - a shop owner billing from their phone shouldn't have
 // to hunt through a drawer for the one button they need most (§17).
-const bottomNavItems = navItems.slice(0, 4)
+const bottomNavItems = computed(() => navItems.value.slice(0, 4))
+const moreNavItems = computed(() => navItems.value.slice(4))
 
 const drawerOpen = ref(false)
 const moreSheetOpen = ref(false)
@@ -84,7 +86,7 @@ async function logout() {
       </template>
       <v-list>
         <v-list-item id="settings-action" :to="{ name: 'settings' }">
-          <v-list-item-title>Business Settings</v-list-item-title>
+          <v-list-item-title>{{ t('nav.businessSettings') }}</v-list-item-title>
         </v-list-item>
         <v-list-item id="logout-action" @click="logout">
           <v-list-item-title>{{ t('auth.logout') }}</v-list-item-title>
@@ -104,7 +106,7 @@ async function logout() {
     <v-list nav density="comfortable" class="pa-3">
       <v-list-item
         v-for="item in navItems"
-        :key="item.title"
+        :key="item.key"
         :to="item.to"
         :prepend-icon="item.icon"
         :title="item.title"
@@ -123,8 +125,8 @@ async function logout() {
   <v-bottom-navigation v-if="mobile" grow color="primary" bg-color="surface" elevation="8" class="bottom-nav">
     <v-btn
       v-for="item in bottomNavItems"
-      :key="item.title"
-      :value="item.title"
+      :key="item.key"
+      :value="item.key"
       :active="activeName === item.to.name"
       @click="go(item.to)"
     >
@@ -133,21 +135,21 @@ async function logout() {
     </v-btn>
     <v-btn value="more" @click="moreSheetOpen = true">
       <v-icon icon="mdi-dots-horizontal" />
-      <span class="text-caption">More</span>
+      <span class="text-caption">{{ t('nav.more') }}</span>
     </v-btn>
   </v-bottom-navigation>
 
   <v-bottom-sheet v-model="moreSheetOpen">
     <v-list class="pt-2 pb-4">
       <v-list-item
-        v-for="item in navItems.slice(4)"
-        :key="item.title"
+        v-for="item in moreNavItems"
+        :key="item.key"
         :prepend-icon="item.icon"
         :title="item.title"
         @click="go(item.to)"
       />
       <v-divider class="my-2" />
-      <v-list-item prepend-icon="mdi-cog-outline" title="Business Settings" @click="go({ name: 'settings' })" />
+      <v-list-item prepend-icon="mdi-cog-outline" :title="t('nav.businessSettings')" @click="go({ name: 'settings' })" />
     </v-list>
   </v-bottom-sheet>
 </template>

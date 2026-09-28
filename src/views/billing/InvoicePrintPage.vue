@@ -48,12 +48,12 @@ const thermalWidthStyle = computed(() => {
     <div class="no-print toolbar">
       <v-btn icon="mdi-arrow-left" variant="text" @click="router.back()" />
       <v-btn-toggle v-model="layout" density="comfortable" mandatory class="mx-3">
-        <v-btn value="thermal" size="small">Thermal</v-btn>
-        <v-btn value="compact" size="small">Compact</v-btn>
-        <v-btn value="a4" size="small">A4</v-btn>
+        <v-btn value="thermal" size="small">{{ $t('invoicePrint.thermal') }}</v-btn>
+        <v-btn value="compact" size="small">{{ $t('invoicePrint.compact') }}</v-btn>
+        <v-btn value="a4" size="small">{{ $t('invoicePrint.a4') }}</v-btn>
       </v-btn-toggle>
       <v-spacer />
-      <v-btn color="primary" prepend-icon="mdi-printer" @click="print">Print / Save PDF</v-btn>
+      <v-btn color="primary" prepend-icon="mdi-printer" @click="print">{{ $t('invoicePrint.printSavePdf') }}</v-btn>
     </div>
 
     <div v-if="loading" class="d-flex justify-center py-12">
@@ -73,20 +73,20 @@ const thermalWidthStyle = computed(() => {
         <div v-if="business.phone || business.email" class="muted">
           {{ [business.phone, business.email].filter(Boolean).join(' · ') }}
         </div>
-        <div v-if="business.tax_number" class="muted">Tax No: {{ business.tax_number }}</div>
+        <div v-if="business.tax_number" class="muted">{{ $t('invoicePrint.taxNo', { number: business.tax_number }) }}</div>
       </div>
 
       <div class="meta">
         <div>
-          <div class="label">Invoice</div>
+          <div class="label">{{ $t('invoices.invoice') }}</div>
           <div class="value">{{ invoice.invoice_number }}</div>
         </div>
         <div>
-          <div class="label">Date</div>
+          <div class="label">{{ $t('stockMovements.date') }}</div>
           <div class="value">{{ new Date(invoice.issued_at).toLocaleString() }}</div>
         </div>
         <div v-if="invoice.customer">
-          <div class="label">Customer</div>
+          <div class="label">{{ $t('nav.customers') }}</div>
           <div class="value">{{ invoice.customer.name }}</div>
         </div>
       </div>
@@ -94,10 +94,10 @@ const thermalWidthStyle = computed(() => {
       <table class="items">
         <thead>
           <tr>
-            <th>Item</th>
-            <th>Qty</th>
-            <th v-if="layout !== 'thermal'">Price</th>
-            <th>Total</th>
+            <th>{{ $t('invoices.item') }}</th>
+            <th>{{ $t('stockMovements.qty') }}</th>
+            <th v-if="layout !== 'thermal'">{{ $t('invoicePrint.price') }}</th>
+            <th>{{ $t('billing.cart.total') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -111,13 +111,13 @@ const thermalWidthStyle = computed(() => {
       </table>
 
       <div class="totals">
-        <div class="row"><span>Subtotal</span><span>{{ invoice.subtotal }}</span></div>
+        <div class="row"><span>{{ $t('billing.cart.subtotal') }}</span><span>{{ invoice.subtotal }}</span></div>
         <div v-if="Number(invoice.discount_amount) > 0" class="row">
-          <span>Discount</span><span>-{{ invoice.discount_amount }}</span>
+          <span>{{ $t('billing.cart.discount') }}</span><span>-{{ invoice.discount_amount }}</span>
         </div>
-        <div class="row"><span>Tax</span><span>{{ invoice.tax_amount }}</span></div>
-        <div class="row total"><span>Total</span><span>{{ invoice.currency }} {{ invoice.total_amount }}</span></div>
-        <div class="row muted"><span>Paid</span><span>{{ invoice.amount_paid }}</span></div>
+        <div class="row"><span>{{ $t('billing.cart.tax') }}</span><span>{{ invoice.tax_amount }}</span></div>
+        <div class="row total"><span>{{ $t('billing.cart.total') }}</span><span>{{ invoice.currency }} {{ invoice.total_amount }}</span></div>
+        <div class="row muted"><span>{{ $t('invoices.paid') }}</span><span>{{ invoice.amount_paid }}</span></div>
       </div>
 
       <div v-if="business.invoice_footer" class="footer">{{ business.invoice_footer }}</div>

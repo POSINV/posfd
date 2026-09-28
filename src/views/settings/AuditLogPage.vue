@@ -1,7 +1,10 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { AuditLogsApi } from '@/api/auditLogs'
 import { apiErrorMessage } from '@/api/client'
+
+const { t } = useI18n()
 
 const logs = ref([])
 const page = ref(1)
@@ -15,22 +18,22 @@ const entityTypeFilter = ref(null)
 const fromDate = ref('')
 const toDate = ref('')
 
-const actionOptions = [
-  { title: 'Product created', value: 'product.created' },
-  { title: 'Product updated', value: 'product.updated' },
-  { title: 'Product price changed', value: 'product.price_changed' },
-  { title: 'Product deleted', value: 'product.deleted' },
-  { title: 'Business settings updated', value: 'business.settings_updated' },
-  { title: 'Onboarding completed', value: 'business.onboarding_completed' },
-  { title: 'Invoice created', value: 'invoice.created' },
-  { title: 'Invoice cancelled', value: 'invoice.cancelled' },
-  { title: 'Stock adjusted', value: 'inventory.adjusted' },
-  { title: 'Bulk import performed', value: 'import.performed' },
-]
+const actionOptions = computed(() => [
+  { title: t('auditLog.actions.productCreated'), value: 'product.created' },
+  { title: t('auditLog.actions.productUpdated'), value: 'product.updated' },
+  { title: t('auditLog.actions.productPriceChanged'), value: 'product.price_changed' },
+  { title: t('auditLog.actions.productDeleted'), value: 'product.deleted' },
+  { title: t('auditLog.actions.businessSettingsUpdated'), value: 'business.settings_updated' },
+  { title: t('auditLog.actions.onboardingCompleted'), value: 'business.onboarding_completed' },
+  { title: t('auditLog.actions.invoiceCreated'), value: 'invoice.created' },
+  { title: t('auditLog.actions.invoiceCancelled'), value: 'invoice.cancelled' },
+  { title: t('auditLog.actions.stockAdjusted'), value: 'inventory.adjusted' },
+  { title: t('auditLog.actions.bulkImportPerformed'), value: 'import.performed' },
+])
 
 const entityTypeOptions = ['Product', 'Business', 'Invoice', 'ProductVariant']
 
-const actionLabels = Object.fromEntries(actionOptions.map((o) => [o.value, o.title]))
+const actionLabels = computed(() => Object.fromEntries(actionOptions.value.map((o) => [o.value, o.title])))
 
 const actionColors = {
   'product.created': 'success',
@@ -86,10 +89,9 @@ const pageCount = () => Math.max(1, Math.ceil(totalCount.value / pageSize))
 
 <template>
   <v-container max-width="1000" class="py-8">
-    <h1 class="text-h5 font-weight-bold mb-1">Audit Log</h1>
+    <h1 class="text-h5 font-weight-bold mb-1">{{ $t('auditLog.title') }}</h1>
     <p class="text-body-2 text-medium-emphasis mb-6">
-      Who did what, and when - product changes, price changes, invoices, stock adjustments,
-      settings changes, and bulk imports for this business.
+      {{ $t('auditLog.subtitle') }}
     </p>
 
     <v-card class="pa-4 mb-4" border>
@@ -98,7 +100,7 @@ const pageCount = () => Math.max(1, Math.ceil(totalCount.value / pageSize))
           <v-select
             v-model="actionFilter"
             :items="actionOptions"
-            label="Action"
+            :label="$t('auditLog.action')"
             clearable
             density="comfortable"
           />
@@ -107,16 +109,16 @@ const pageCount = () => Math.max(1, Math.ceil(totalCount.value / pageSize))
           <v-select
             v-model="entityTypeFilter"
             :items="entityTypeOptions"
-            label="Entity type"
+            :label="$t('auditLog.entityType')"
             clearable
             density="comfortable"
           />
         </v-col>
         <v-col cols="12" sm="3">
-          <v-text-field v-model="fromDate" type="date" label="From" density="comfortable" />
+          <v-text-field v-model="fromDate" type="date" :label="$t('auditLog.from')" density="comfortable" />
         </v-col>
         <v-col cols="12" sm="3">
-          <v-text-field v-model="toDate" type="date" label="To" density="comfortable" />
+          <v-text-field v-model="toDate" type="date" :label="$t('auditLog.toDate')" density="comfortable" />
         </v-col>
       </v-row>
     </v-card>
@@ -130,20 +132,20 @@ const pageCount = () => Math.max(1, Math.ceil(totalCount.value / pageSize))
 
       <div v-else-if="!logs.length" class="pa-12 text-center">
         <v-icon icon="mdi-shield-search-outline" size="40" color="medium-emphasis" class="mb-3" />
-        <div class="text-body-1 font-weight-medium">No matching entries</div>
+        <div class="text-body-1 font-weight-medium">{{ $t('auditLog.noMatchingEntries') }}</div>
         <div class="text-body-2 text-medium-emphasis">
-          Actions like creating a product or billing an invoice will show up here.
+          {{ $t('auditLog.emptyHint') }}
         </div>
       </div>
 
       <v-table v-else density="comfortable">
         <thead>
           <tr>
-            <th>When</th>
-            <th>Action</th>
-            <th>Entity</th>
-            <th>User</th>
-            <th>Details</th>
+            <th>{{ $t('auditLog.when') }}</th>
+            <th>{{ $t('auditLog.action') }}</th>
+            <th>{{ $t('auditLog.entity') }}</th>
+            <th>{{ $t('auditLog.user') }}</th>
+            <th>{{ $t('auditLog.details') }}</th>
           </tr>
         </thead>
         <tbody>

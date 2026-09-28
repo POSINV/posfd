@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 import { apiErrorMessage } from '@/api/client'
 import VariantFormDialog from '@/components/products/VariantFormDialog.vue'
@@ -10,6 +11,13 @@ import StockMovementsPanel from '@/components/products/StockMovementsPanel.vue'
 const props = defineProps({ id: { type: String, default: null } })
 const router = useRouter()
 const store = useProductsStore()
+const { t } = useI18n()
+
+const statusOptions = computed(() => [
+  { title: t('products.form.statusActive'), value: 'active' },
+  { title: t('products.form.statusInactive'), value: 'inactive' },
+  { title: t('products.form.statusDraft'), value: 'draft' },
+])
 
 const productId = ref(props.id)
 const isEdit = computed(() => !!productId.value)
@@ -157,7 +165,7 @@ async function confirmDeleteVariant() {
 
 function variantLabel(variant) {
   const attrs = Object.entries(variant.attributes || {})
-  return attrs.length ? attrs.map(([k, v]) => `${k}: ${v}`).join(', ') : variant.sku || 'Variant'
+  return attrs.length ? attrs.map(([k, v]) => `${k}: ${v}`).join(', ') : variant.sku || t('products.form.variant')
 }
 </script>
 
@@ -166,7 +174,7 @@ function variantLabel(variant) {
   <v-container max-width="800" class="py-8">
       <div class="d-flex align-center mb-6">
         <v-btn icon="mdi-arrow-left" variant="text" :to="{ name: 'products' }" class="mr-2" />
-        <h1 class="text-h5 font-weight-bold">{{ isEdit ? 'Edit Product' : 'Add Product' }}</h1>
+        <h1 class="text-h5 font-weight-bold">{{ isEdit ? $t('products.form.editProduct') : $t('products.form.addProduct') }}</h1>
       </div>
 
       <div v-if="loading" class="d-flex justify-center py-12">
@@ -181,7 +189,7 @@ function variantLabel(variant) {
             <v-text-field
               id="product-name-input"
               v-model="form.name"
-              label="Product name"
+              :label="$t('products.form.productName')"
               :error-messages="formErrors.name"
               class="mb-2"
             />
@@ -191,30 +199,30 @@ function variantLabel(variant) {
                 <v-select
                   id="product-category-select"
                   v-model="form.category_id"
-                  label="Category"
+                  :label="$t('products.table.category')"
                   :items="store.categories.map((c) => ({ title: c.name, value: c.id }))"
                   clearable
                 />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field id="product-brand-input" v-model="form.brand" label="Brand (optional)" />
+                <v-text-field id="product-brand-input" v-model="form.brand" :label="$t('products.form.brand')" />
               </v-col>
               <v-col cols="12" sm="4">
-                <v-text-field id="product-unit-input" v-model="form.unit" label="Unit" hint="e.g. pcs, kg, ltr" />
+                <v-text-field id="product-unit-input" v-model="form.unit" :label="$t('products.form.unit')" :hint="$t('products.form.unitHint')" />
               </v-col>
               <v-col cols="12" sm="4">
                 <v-select
                   id="product-status-select"
                   v-model="form.status"
-                  label="Status"
-                  :items="['active', 'inactive', 'draft']"
+                  :label="$t('products.table.status')"
+                  :items="statusOptions"
                 />
               </v-col>
               <v-col cols="12" sm="4">
                 <v-text-field
                   id="product-tax-rate-input"
                   v-model="form.tax_rate"
-                  label="Tax rate (%)"
+                  :label="$t('products.form.taxRate')"
                   :error-messages="formErrors.tax_rate"
                 />
               </v-col>
@@ -224,25 +232,25 @@ function variantLabel(variant) {
               id="product-has-variants-switch"
               v-model="form.has_variants"
               color="primary"
-              label="This product has variants (size, color, ...)"
+              :label="$t('products.form.hasVariants')"
               class="mb-2"
             />
 
             <v-row v-if="!form.has_variants">
               <v-col cols="12" sm="6">
-                <v-text-field id="product-sku-input" v-model="form.sku" label="SKU (optional)" :error-messages="formErrors.sku" />
+                <v-text-field id="product-sku-input" v-model="form.sku" :label="$t('products.form.sku')" :error-messages="formErrors.sku" />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field id="product-barcode-input" v-model="form.barcode" label="Barcode (optional)" />
+                <v-text-field id="product-barcode-input" v-model="form.barcode" :label="$t('products.form.barcode')" />
               </v-col>
               <v-col cols="12" sm="4">
-                <v-text-field id="product-purchase-price-input" v-model="form.purchase_price" label="Purchase price" />
+                <v-text-field id="product-purchase-price-input" v-model="form.purchase_price" :label="$t('products.form.purchasePrice')" />
               </v-col>
               <v-col cols="12" sm="4">
-                <v-text-field id="product-selling-price-input" v-model="form.selling_price" label="Selling price" />
+                <v-text-field id="product-selling-price-input" v-model="form.selling_price" :label="$t('products.form.sellingPrice')" />
               </v-col>
               <v-col cols="12" sm="4">
-                <v-text-field id="product-mrp-input" v-model="form.mrp" label="MRP" />
+                <v-text-field id="product-mrp-input" v-model="form.mrp" :label="$t('products.form.mrp')" />
               </v-col>
               <v-col cols="12" sm="4">
                 <v-text-field
@@ -250,20 +258,20 @@ function variantLabel(variant) {
                   v-model.number="form.reorder_level"
                   type="number"
                   min="0"
-                  label="Reorder level"
-                  hint="Get a low-stock warning at or below this quantity"
+                  :label="$t('products.form.reorderLevel')"
+                  :hint="$t('products.form.reorderLevelHint')"
                   persistent-hint
                 />
               </v-col>
             </v-row>
             <v-alert v-else type="info" variant="tonal" density="comfortable" class="mb-2">
-              Pricing and SKU are set per variant below.
-              <span v-if="!isEdit">Save the product first to start adding variants.</span>
+              {{ $t('products.form.pricingPerVariant') }}
+              <span v-if="!isEdit">{{ $t('products.form.saveFirstHint') }}</span>
             </v-alert>
 
             <div class="d-flex justify-end mt-4">
               <v-btn id="save-product-btn" type="submit" color="primary" :loading="saving">
-                {{ isEdit ? 'Save Changes' : 'Save Product' }}
+                {{ isEdit ? $t('products.form.saveChanges') : $t('products.form.saveProduct') }}
               </v-btn>
             </div>
           </v-form>
@@ -283,22 +291,21 @@ function variantLabel(variant) {
 
         <v-card v-if="form.has_variants && isEdit" class="pa-6" border>
           <div class="d-flex align-center justify-space-between mb-4">
-            <h2 class="text-h6 font-weight-bold">Variants</h2>
+            <h2 class="text-h6 font-weight-bold">{{ $t('products.form.variants') }}</h2>
             <v-btn id="add-variant-btn" color="primary" variant="tonal" prepend-icon="mdi-plus" @click="openAddVariant">
-              Add Variant
+              {{ $t('products.form.addVariant') }}
             </v-btn>
           </div>
 
           <div v-if="!variants.length" class="text-body-2 text-medium-emphasis text-center py-8">
-            No variants yet. Add sizes, colors, or other options customers can choose from.
+            {{ $t('products.form.noVariants') }}
           </div>
 
           <v-list v-else>
             <v-list-item v-for="variant in variants" :key="variant.id" :id="`variant-row-${variant.id}`">
               <v-list-item-title>{{ variantLabel(variant) }}</v-list-item-title>
               <v-list-item-subtitle>
-                SKU: {{ variant.sku || '—' }} · Selling price: {{ variant.selling_price || '—' }} · Stock:
-                {{ variant.stock_quantity }}
+                {{ $t('products.form.skuColon', { sku: variant.sku || '—' }) }} · {{ $t('products.form.sellingPriceColon', { price: variant.selling_price || '—' }) }} · {{ $t('products.form.stockColon', { count: variant.stock_quantity }) }}
                 <v-icon v-if="variant.low_stock" icon="mdi-alert-circle" color="warning" size="16" class="ml-1" />
               </v-list-item-subtitle>
               <template #append>
@@ -306,14 +313,14 @@ function variantLabel(variant) {
                   icon="mdi-cube-outline"
                   variant="text"
                   size="small"
-                  title="Manage stock"
+                  :title="$t('products.form.manageStock')"
                   @click="stockVariant = variant"
                 />
                 <v-btn
                   icon="mdi-currency-usd"
                   variant="text"
                   size="small"
-                  title="Manage pricing tiers"
+                  :title="$t('products.form.managePricingTiers')"
                   @click="pricingVariant = variant"
                 />
                 <v-btn icon="mdi-pencil-outline" variant="text" size="small" @click="openEditVariant(variant)" />
@@ -346,19 +353,19 @@ function variantLabel(variant) {
       @update:model-value="variantDeleteTarget = null"
     >
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Delete variant?</v-card-title>
-        <v-card-text>"{{ variantLabel(variantDeleteTarget || {}) }}" will be removed.</v-card-text>
+        <v-card-title class="font-weight-bold">{{ $t('products.form.deleteVariantTitle') }}</v-card-title>
+        <v-card-text>{{ $t('products.form.deleteVariantConfirm', { name: variantLabel(variantDeleteTarget || {}) }) }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="variantDeleteTarget = null">Cancel</v-btn>
-          <v-btn color="error" @click="confirmDeleteVariant">Delete</v-btn>
+          <v-btn variant="text" @click="variantDeleteTarget = null">{{ $t('common.cancel') }}</v-btn>
+          <v-btn color="error" @click="confirmDeleteVariant">{{ $t('common.delete') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog :model-value="!!pricingVariant" max-width="640" @update:model-value="pricingVariant = null">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Pricing — {{ variantLabel(pricingVariant || {}) }}</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('products.form.pricingFor', { name: variantLabel(pricingVariant || {}) }) }}</v-card-title>
         <v-card-text>
           <PriceTiersManager
             v-if="pricingVariant"
@@ -368,14 +375,14 @@ function variantLabel(variant) {
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="pricingVariant = null">Close</v-btn>
+          <v-btn variant="text" @click="pricingVariant = null">{{ $t('common.close') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog :model-value="!!stockVariant" max-width="640" @update:model-value="stockVariant = null">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Stock — {{ variantLabel(stockVariant || {}) }}</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('products.form.stockFor', { name: variantLabel(stockVariant || {}) }) }}</v-card-title>
         <v-card-text>
           <StockMovementsPanel
             v-if="stockVariant"
@@ -386,7 +393,7 @@ function variantLabel(variant) {
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="stockVariant = null">Close</v-btn>
+          <v-btn variant="text" @click="stockVariant = null">{{ $t('common.close') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

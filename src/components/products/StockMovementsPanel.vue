@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { InventoryApi } from '@/api/inventory'
 import { apiErrorMessage } from '@/api/client'
 
@@ -9,6 +10,7 @@ const props = defineProps({
   stockQuantity: { type: Number, default: 0 },
 })
 const emit = defineEmits(['stock-changed'])
+const { t } = useI18n()
 
 const target = computed(() =>
   props.variantId ? { variant_id: props.variantId } : { product_id: props.productId },
@@ -22,14 +24,14 @@ const dialogOpen = ref(false)
 const saving = ref(false)
 const formErrors = ref({})
 
-const MOVEMENT_TYPES = [
-  { title: 'Opening Stock', value: 'opening_stock', direction: 'in' },
-  { title: 'Purchase (stock in)', value: 'purchase', direction: 'in' },
-  { title: 'Sale (stock out)', value: 'sale', direction: 'out' },
-  { title: 'Return (stock in)', value: 'return', direction: 'in' },
-  { title: 'Adjustment - increase', value: 'adjustment', direction: 'in' },
-  { title: 'Adjustment - decrease', value: 'adjustment', direction: 'out' },
-]
+const MOVEMENT_TYPES = computed(() => [
+  { title: t('stockMovements.types.openingStock'), value: 'opening_stock', direction: 'in' },
+  { title: t('stockMovements.types.purchaseIn'), value: 'purchase', direction: 'in' },
+  { title: t('stockMovements.types.saleOut'), value: 'sale', direction: 'out' },
+  { title: t('stockMovements.types.returnIn'), value: 'return', direction: 'in' },
+  { title: t('stockMovements.types.adjustmentIncrease'), value: 'adjustment', direction: 'in' },
+  { title: t('stockMovements.types.adjustmentDecrease'), value: 'adjustment', direction: 'out' },
+])
 
 function emptyForm() {
   return { choice: 'opening_stock:in', quantity: 1, reference: '', notes: '' }
@@ -82,7 +84,7 @@ async function save() {
 }
 
 function typeLabel(m) {
-  const match = MOVEMENT_TYPES.find((t) => t.value === m.movement_type && t.direction === m.direction)
+  const match = MOVEMENT_TYPES.value.find((item) => item.value === m.movement_type && item.direction === m.direction)
   return match?.title || m.movement_type
 }
 </script>
@@ -91,11 +93,11 @@ function typeLabel(m) {
   <div>
     <div class="d-flex align-center justify-space-between mb-3">
       <div>
-        <div class="text-subtitle-2 font-weight-medium">Stock movements</div>
-        <div class="text-caption text-medium-emphasis">Current stock: {{ stockQuantity }}</div>
+        <div class="text-subtitle-2 font-weight-medium">{{ $t('stockMovements.title') }}</div>
+        <div class="text-caption text-medium-emphasis">{{ $t('stockMovements.currentStock', { count: stockQuantity }) }}</div>
       </div>
       <v-btn size="small" variant="tonal" color="primary" prepend-icon="mdi-plus" @click="openRecord">
-        Record Movement
+        {{ $t('stockMovements.recordMovement') }}
       </v-btn>
     </div>
 
@@ -108,17 +110,17 @@ function typeLabel(m) {
     </div>
 
     <div v-else-if="!movements.length" class="text-body-2 text-medium-emphasis py-2">
-      No stock movements yet. Record opening stock to get started.
+      {{ $t('stockMovements.empty') }}
     </div>
 
     <v-table v-else density="comfortable">
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Qty</th>
-          <th>Reference</th>
-          <th>By</th>
+          <th>{{ $t('stockMovements.date') }}</th>
+          <th>{{ $t('stockMovements.type') }}</th>
+          <th>{{ $t('stockMovements.qty') }}</th>
+          <th>{{ $t('stockMovements.reference') }}</th>
+          <th>{{ $t('stockMovements.by') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -138,29 +140,29 @@ function typeLabel(m) {
 
     <v-dialog v-model="dialogOpen" max-width="480">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Record Stock Movement</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('stockMovements.recordStockMovement') }}</v-card-title>
         <v-card-text>
           <v-select
             v-model="form.choice"
-            label="Movement type"
-            :items="MOVEMENT_TYPES.map((t) => ({ title: t.title, value: `${t.value}:${t.direction}` }))"
+            :label="$t('stockMovements.movementType')"
+            :items="MOVEMENT_TYPES.map((item) => ({ title: item.title, value: `${item.value}:${item.direction}` }))"
             class="mb-2"
           />
           <v-text-field
             v-model.number="form.quantity"
             type="number"
             min="1"
-            label="Quantity"
+            :label="$t('stockMovements.quantity')"
             :error-messages="formErrors.quantity"
             class="mb-2"
           />
-          <v-text-field v-model="form.reference" label="Reference (optional)" hint="e.g. PO-1023, INV-2044" class="mb-2" />
-          <v-textarea v-model="form.notes" label="Notes (optional)" rows="2" />
+          <v-text-field v-model="form.reference" :label="$t('stockMovements.referenceOptional')" :hint="$t('stockMovements.referenceHint')" class="mb-2" />
+          <v-textarea v-model="form.notes" :label="$t('common.notesOptional')" rows="2" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogOpen = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="saving" @click="save">Save</v-btn>
+          <v-btn variant="text" @click="dialogOpen = false">{{ $t('common.cancel') }}</v-btn>
+          <v-btn color="primary" :loading="saving" @click="save">{{ $t('common.save') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -58,7 +58,7 @@ function currency(amount) {
 
 <template>
   <v-container class="py-8">
-      <h1 class="text-h5 font-weight-bold mb-4">Reports</h1>
+      <h1 class="text-h5 font-weight-bold mb-4">{{ $t('nav.reports') }}</h1>
 
       <DateRangePicker v-model="range" class="mb-6" />
 
@@ -70,32 +70,32 @@ function currency(amount) {
 
       <template v-else-if="summary">
         <v-card class="pa-4 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">Sales Trend</div>
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('reports.salesTrend') }}</div>
           <SalesTrendChart :days="dailySales" :currency="auth.currentBusiness?.currency" />
         </v-card>
 
         <v-row class="mb-2">
           <v-col cols="6" sm="3">
             <v-card class="pa-4" border>
-              <div class="text-caption text-medium-emphasis">Revenue</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('reports.revenue') }}</div>
               <div class="text-h6 font-weight-bold">{{ currency(summary.revenue) }}</div>
             </v-card>
           </v-col>
           <v-col cols="6" sm="3">
             <v-card class="pa-4" border>
-              <div class="text-caption text-medium-emphasis">Invoices</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('nav.invoices') }}</div>
               <div class="text-h6 font-weight-bold">{{ summary.invoice_count }}</div>
             </v-card>
           </v-col>
           <v-col cols="6" sm="3">
             <v-card class="pa-4" border>
-              <div class="text-caption text-medium-emphasis">Average Sale</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('reports.averageSale') }}</div>
               <div class="text-h6 font-weight-bold">{{ currency(summary.average_sale) }}</div>
             </v-card>
           </v-col>
           <v-col cols="6" sm="3">
             <v-card class="pa-4" border>
-              <div class="text-caption text-medium-emphasis">Tax Collected</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('reports.taxCollected') }}</div>
               <div class="text-h6 font-weight-bold">{{ currency(summary.tax) }}</div>
             </v-card>
           </v-col>
@@ -104,22 +104,22 @@ function currency(amount) {
         <v-row>
           <v-col cols="12" md="6">
             <v-card class="pa-4 mb-6" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Payment Methods</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('reports.paymentMethods') }}</div>
               <div v-if="!Object.keys(summary.by_payment_method).length" class="text-body-2 text-medium-emphasis">
-                No payments in this range.
+                {{ $t('reports.noPaymentsInRange') }}
               </div>
               <div v-for="(amount, method) in summary.by_payment_method" :key="method" class="d-flex justify-space-between text-body-2 mb-1">
-                <span class="text-capitalize">{{ method }}</span>
+                <span class="text-capitalize">{{ $t(`billing.cart.paymentMethods.${method}`) }}</span>
                 <span>{{ currency(amount) }}</span>
               </div>
             </v-card>
 
             <v-card class="pa-4" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Top Products</div>
-              <div v-if="!topProducts.length" class="text-body-2 text-medium-emphasis">No sales in this range.</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('reports.topProducts') }}</div>
+              <div v-if="!topProducts.length" class="text-body-2 text-medium-emphasis">{{ $t('reports.noSalesInRange') }}</div>
               <v-table v-else density="comfortable">
                 <thead>
-                  <tr><th>Product</th><th class="text-right">Qty Sold</th><th class="text-right">Revenue</th></tr>
+                  <tr><th>{{ $t('reports.product') }}</th><th class="text-right">{{ $t('reports.qtySold') }}</th><th class="text-right">{{ $t('reports.revenue') }}</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="p in topProducts" :key="p.name">
@@ -132,15 +132,15 @@ function currency(amount) {
             </v-card>
 
             <v-card v-if="loyalty && (loyalty.points_earned > 0 || loyalty.points_redeemed > 0)" class="pa-4 mt-6" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Loyalty</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('reports.loyalty') }}</div>
               <div class="d-flex justify-space-between text-body-2 mb-1">
-                <span>Points earned</span><span>{{ loyalty.points_earned }}</span>
+                <span>{{ $t('reports.pointsEarned') }}</span><span>{{ loyalty.points_earned }}</span>
               </div>
               <div class="d-flex justify-space-between text-body-2 mb-1">
-                <span>Points redeemed</span><span>{{ loyalty.points_redeemed }}</span>
+                <span>{{ $t('reports.pointsRedeemed') }}</span><span>{{ loyalty.points_redeemed }}</span>
               </div>
               <div class="d-flex justify-space-between text-body-2">
-                <span>Active members</span><span>{{ loyalty.active_members }}</span>
+                <span>{{ $t('reports.activeMembers') }}</span><span>{{ loyalty.active_members }}</span>
               </div>
             </v-card>
           </v-col>
@@ -148,13 +148,13 @@ function currency(amount) {
           <v-col cols="12" md="6">
             <v-card class="pa-4" border>
               <div class="d-flex align-center justify-space-between mb-3">
-                <div class="text-subtitle-1 font-weight-bold">Current Stock</div>
-                <v-switch v-model="lowStockOnly" label="Low stock only" density="compact" hide-details color="warning" />
+                <div class="text-subtitle-1 font-weight-bold">{{ $t('reports.currentStock') }}</div>
+                <v-switch v-model="lowStockOnly" :label="$t('reports.lowStockOnly')" density="compact" hide-details color="warning" />
               </div>
-              <div v-if="!stockItems.length" class="text-body-2 text-medium-emphasis">No items to show.</div>
+              <div v-if="!stockItems.length" class="text-body-2 text-medium-emphasis">{{ $t('reports.noItemsToShow') }}</div>
               <v-table v-else density="comfortable">
                 <thead>
-                  <tr><th>Item</th><th class="text-right">Stock</th><th class="text-right">Reorder Level</th></tr>
+                  <tr><th>{{ $t('invoices.item') }}</th><th class="text-right">{{ $t('products.table.stock') }}</th><th class="text-right">{{ $t('reports.reorderLevel') }}</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="item in stockItems" :key="item.id">

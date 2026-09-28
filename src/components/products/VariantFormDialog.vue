@@ -71,7 +71,7 @@ async function save() {
 <template>
   <v-dialog :model-value="true" max-width="560" @update:model-value="$emit('close')">
     <v-card class="pa-4">
-      <v-card-title class="font-weight-bold">{{ isEdit ? 'Edit Variant' : 'Add Variant' }}</v-card-title>
+      <v-card-title class="font-weight-bold">{{ isEdit ? $t('products.form.editVariant') : $t('products.form.addVariant') }}</v-card-title>
       <v-card-text>
         <v-alert v-if="errorMessage" type="error" variant="tonal" density="comfortable" class="mb-4">
           {{ errorMessage }}
@@ -79,19 +79,19 @@ async function save() {
 
         <v-row>
           <v-col cols="12" sm="6">
-            <v-text-field id="variant-sku-input" v-model="form.sku" label="SKU" />
+            <v-text-field id="variant-sku-input" v-model="form.sku" :label="$t('products.form.sku')" />
           </v-col>
           <v-col cols="12" sm="6">
-            <v-text-field id="variant-barcode-input" v-model="form.barcode" label="Barcode" />
+            <v-text-field id="variant-barcode-input" v-model="form.barcode" :label="$t('products.form.barcode')" />
           </v-col>
           <v-col cols="12" sm="4">
-            <v-text-field id="variant-purchase-price-input" v-model="form.purchase_price" label="Purchase price" />
+            <v-text-field id="variant-purchase-price-input" v-model="form.purchase_price" :label="$t('products.form.purchasePrice')" />
           </v-col>
           <v-col cols="12" sm="4">
-            <v-text-field id="variant-selling-price-input" v-model="form.selling_price" label="Selling price" />
+            <v-text-field id="variant-selling-price-input" v-model="form.selling_price" :label="$t('products.form.sellingPrice')" />
           </v-col>
           <v-col cols="12" sm="4">
-            <v-text-field id="variant-mrp-input" v-model="form.mrp" label="MRP" />
+            <v-text-field id="variant-mrp-input" v-model="form.mrp" :label="$t('products.form.mrp')" />
           </v-col>
           <v-col cols="12" sm="4">
             <v-text-field
@@ -99,35 +99,35 @@ async function save() {
               v-model.number="form.reorder_level"
               type="number"
               min="0"
-              label="Reorder level"
+              :label="$t('products.form.reorderLevel')"
             />
           </v-col>
         </v-row>
 
-        <div class="text-subtitle-2 font-weight-medium mb-2">Attributes</div>
+        <div class="text-subtitle-2 font-weight-medium mb-2">{{ $t('products.form.attributes') }}</div>
         <div v-for="(row, index) in attributeRows" :key="index" class="d-flex ga-2 mb-2">
           <v-combobox
             v-model="row.name"
             :items="attributeNames"
-            label="Attribute (e.g. Size)"
+            :label="$t('products.form.attributeLabel')"
             density="comfortable"
             hide-details
           />
           <v-combobox
             v-model="row.value"
             :items="valuesFor(row.name)"
-            label="Value (e.g. M)"
+            :label="$t('products.form.attributeValue')"
             density="comfortable"
             hide-details
           />
           <v-btn icon="mdi-close" variant="text" size="small" @click="removeRow(index)" />
         </div>
-        <v-btn variant="text" size="small" prepend-icon="mdi-plus" @click="addRow">Add attribute</v-btn>
+        <v-btn variant="text" size="small" prepend-icon="mdi-plus" @click="addRow">{{ $t('products.form.addAttribute') }}</v-btn>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="$emit('close')">Cancel</v-btn>
-        <v-btn id="save-variant-btn" color="primary" :loading="saving" @click="save">Save</v-btn>
+        <v-btn variant="text" @click="$emit('close')">{{ $t('common.cancel') }}</v-btn>
+        <v-btn id="save-variant-btn" color="primary" :loading="saving" @click="save">{{ $t('common.save') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ReportsApi } from '@/api/reports'
 import { BillingApi } from '@/api/billing'
@@ -7,6 +8,7 @@ import { apiErrorMessage } from '@/api/client'
 import SalesTrendChart from '@/components/dashboard/SalesTrendChart.vue'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -58,9 +60,9 @@ function currency(amount) {
 
 function greeting() {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('dashboard.goodMorning')
+  if (hour < 17) return t('dashboard.goodAfternoon')
+  return t('dashboard.goodEvening')
 }
 
 function paymentColor(s) {
@@ -74,11 +76,11 @@ function paymentColor(s) {
         <div>
           <h1 class="text-h5 font-weight-bold mb-1">{{ greeting() }}, {{ auth.user?.full_name?.split(' ')[0] }}</h1>
           <p class="text-body-2 text-medium-emphasis">
-            Here's how {{ auth.currentBusiness?.name }} is doing today.
+            {{ $t('dashboard.welcome', { business: auth.currentBusiness?.name }) }}
           </p>
         </div>
         <v-btn color="primary" size="large" prepend-icon="mdi-point-of-sale" :to="{ name: 'billing' }">
-          New Sale
+          {{ $t('billing.newSale') }}
         </v-btn>
       </div>
 
@@ -91,11 +93,11 @@ function paymentColor(s) {
       <template v-else-if="!hasAnyProducts">
         <v-card class="pa-10 text-center hover-lift" border>
           <v-icon icon="mdi-rocket-launch-outline" size="48" color="primary" class="mb-4" />
-          <div class="text-h6 font-weight-bold mb-1">Let's get {{ auth.currentBusiness?.name }} selling</div>
+          <div class="text-h6 font-weight-bold mb-1">{{ $t('dashboard.getSelling', { business: auth.currentBusiness?.name }) }}</div>
           <div class="text-body-2 text-medium-emphasis mb-6">
-            Add your first product to start managing inventory and billing.
+            {{ $t('dashboard.addFirstProductHint') }}
           </div>
-          <v-btn color="primary" size="large" :to="{ name: 'product-new' }">Add Your First Product</v-btn>
+          <v-btn color="primary" size="large" :to="{ name: 'product-new' }">{{ $t('dashboard.addFirstProduct') }}</v-btn>
         </v-card>
       </template>
 
@@ -104,7 +106,7 @@ function paymentColor(s) {
           <v-col cols="6" md="3">
             <v-card class="pa-4 stat-card stat-card--primary hover-lift" border>
               <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-caption text-medium-emphasis">Today's Sales</span>
+                <span class="text-caption text-medium-emphasis">{{ $t('dashboard.todaysSales') }}</span>
                 <v-icon icon="mdi-cash-multiple" size="18" color="primary" />
               </div>
               <div class="text-h5 font-weight-bold">{{ currency(todaySummary?.revenue ?? '0.00') }}</div>
@@ -113,7 +115,7 @@ function paymentColor(s) {
           <v-col cols="6" md="3">
             <v-card class="pa-4 stat-card hover-lift" border>
               <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-caption text-medium-emphasis">Invoices Today</span>
+                <span class="text-caption text-medium-emphasis">{{ $t('dashboard.invoicesToday') }}</span>
                 <v-icon icon="mdi-receipt-text-outline" size="18" color="secondary" />
               </div>
               <div class="text-h5 font-weight-bold">{{ todaySummary?.invoice_count ?? 0 }}</div>
@@ -122,7 +124,7 @@ function paymentColor(s) {
           <v-col cols="6" md="3">
             <v-card class="pa-4 stat-card hover-lift" :class="{ 'stat-card--warning': lowStockItems.length }" border>
               <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-caption text-medium-emphasis">Low Stock</span>
+                <span class="text-caption text-medium-emphasis">{{ $t('dashboard.lowStock') }}</span>
                 <v-icon icon="mdi-alert-circle-outline" size="18" :color="lowStockItems.length ? 'warning' : 'medium-emphasis'" />
               </div>
               <div class="text-h5 font-weight-bold">{{ lowStockItems.length }}</div>
@@ -131,7 +133,7 @@ function paymentColor(s) {
           <v-col cols="6" md="3">
             <v-card class="pa-4 stat-card hover-lift" border>
               <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-caption text-medium-emphasis">This Week</span>
+                <span class="text-caption text-medium-emphasis">{{ $t('dashboard.thisWeek') }}</span>
                 <v-icon icon="mdi-trending-up" size="18" color="success" />
               </div>
               <div class="text-h5 font-weight-bold">{{ currency(weekTotal.toFixed(2)) }}</div>
@@ -143,18 +145,18 @@ function paymentColor(s) {
           <v-col cols="12" md="8">
             <v-card class="pa-5 mb-6" border>
               <div class="d-flex align-center justify-space-between mb-4">
-                <div class="text-subtitle-1 font-weight-bold">Sales - Last 7 Days</div>
+                <div class="text-subtitle-1 font-weight-bold">{{ $t('dashboard.salesLast7Days') }}</div>
                 <v-btn size="small" variant="text" :to="{ name: 'reports' }" append-icon="mdi-arrow-right">
-                  Full Reports
+                  {{ $t('dashboard.fullReports') }}
                 </v-btn>
               </div>
               <SalesTrendChart :days="weekDays" :currency="auth.currentBusiness?.currency" />
             </v-card>
 
             <v-card class="pa-5" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Recent Invoices</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('dashboard.recentInvoices') }}</div>
               <div v-if="!recentInvoices.length" class="text-body-2 text-medium-emphasis text-center py-6">
-                No sales yet today.
+                {{ $t('dashboard.noSalesToday') }}
               </div>
               <v-list v-else lines="two" class="pa-0">
                 <v-list-item
@@ -164,12 +166,12 @@ function paymentColor(s) {
                   class="px-0"
                 >
                   <v-list-item-title class="font-weight-medium">{{ invoice.invoice_number }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ invoice.customer?.name || 'Walk-in' }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ invoice.customer?.name || $t('dashboard.walkIn') }}</v-list-item-subtitle>
                   <template #append>
                     <div class="text-right">
                       <div class="font-weight-bold">{{ currency(invoice.total_amount) }}</div>
                       <v-chip size="x-small" :color="paymentColor(invoice.payment_status)" variant="tonal">
-                        {{ invoice.payment_status }}
+                        {{ $t(`common.paymentStatus.${invoice.payment_status}`) }}
                       </v-chip>
                     </div>
                   </template>
@@ -180,43 +182,43 @@ function paymentColor(s) {
 
           <v-col cols="12" md="4">
             <v-card class="pa-5 mb-6" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Top Products This Week</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('dashboard.topProductsThisWeek') }}</div>
               <div v-if="!topProducts.length" class="text-body-2 text-medium-emphasis text-center py-6">
-                No sales yet this week.
+                {{ $t('dashboard.noSalesThisWeek') }}
               </div>
               <div v-for="(p, i) in topProducts" :key="p.name" class="d-flex align-center mb-3">
                 <div class="rank-badge mr-3">{{ i + 1 }}</div>
                 <div class="flex-grow-1">
                   <div class="text-body-2 font-weight-medium">{{ p.name }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ p.quantity_sold }} sold</div>
+                  <div class="text-caption text-medium-emphasis">{{ $t('dashboard.sold', { count: p.quantity_sold }) }}</div>
                 </div>
                 <div class="text-body-2 font-weight-bold">{{ currency(p.revenue) }}</div>
               </div>
             </v-card>
 
             <v-card class="pa-5 mb-6" border>
-              <div class="text-subtitle-1 font-weight-bold mb-3">Quick Actions</div>
+              <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('dashboard.quickActions') }}</div>
               <v-btn variant="tonal" color="primary" block class="mb-2 justify-start" prepend-icon="mdi-plus" :to="{ name: 'product-new' }">
-                Add Product
+                {{ $t('dashboard.addProduct') }}
               </v-btn>
               <v-btn variant="tonal" block class="mb-2 justify-start" prepend-icon="mdi-account-plus-outline" :to="{ name: 'customers' }">
-                Add Customer
+                {{ $t('dashboard.addCustomer') }}
               </v-btn>
               <v-btn variant="tonal" block class="justify-start" prepend-icon="mdi-cog-outline" :to="{ name: 'settings' }">
-                Business Settings
+                {{ $t('nav.businessSettings') }}
               </v-btn>
             </v-card>
 
             <v-card v-if="lowStockItems.length" class="pa-5" border color="warning" variant="tonal">
               <div class="d-flex align-center mb-2">
                 <v-icon icon="mdi-alert-circle-outline" class="mr-2" />
-                <div class="text-subtitle-1 font-weight-bold">Low Stock Alert</div>
+                <div class="text-subtitle-1 font-weight-bold">{{ $t('dashboard.lowStockAlert') }}</div>
               </div>
               <div v-for="item in lowStockItems.slice(0, 4)" :key="item.id" class="text-body-2 d-flex justify-space-between py-1">
                 <span>{{ item.name }}</span>
-                <span class="font-weight-bold">{{ item.stock_quantity }} left</span>
+                <span class="font-weight-bold">{{ $t('dashboard.itemsLeft', { count: item.stock_quantity }) }}</span>
               </div>
-              <v-btn size="small" variant="text" class="mt-2" :to="{ name: 'reports' }">View all</v-btn>
+              <v-btn size="small" variant="text" class="mt-2" :to="{ name: 'reports' }">{{ $t('dashboard.viewAll') }}</v-btn>
             </v-card>
           </v-col>
         </v-row>

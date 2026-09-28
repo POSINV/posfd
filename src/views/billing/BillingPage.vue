@@ -22,6 +22,7 @@ const customerId = ref(null)
 const paymentMethod = ref('cash')
 const paymentAmount = ref('')
 const redeemPoints = ref('')
+const offerCode = ref('')
 const loyaltyProgram = ref(null)
 
 const submitting = ref(false)
@@ -106,6 +107,10 @@ async function completeSale() {
     payload.redeem_points = Number(redeemPoints.value)
   }
 
+  if (offerCode.value) {
+    payload.offer_code = offerCode.value
+  }
+
   if (Number(paymentAmount.value) > 0) {
     payload.payments = [{ method: paymentMethod.value, amount: paymentAmount.value }]
   }
@@ -127,6 +132,7 @@ function resetCart() {
   paymentMethod.value = 'cash'
   paymentAmount.value = ''
   redeemPoints.value = ''
+  offerCode.value = ''
   idempotencyKey = crypto.randomUUID()
   mobileCartOpen.value = false
 }
@@ -139,7 +145,7 @@ function startNewSale() {
 <template>
   <div>
   <v-container fluid class="py-6">
-      <h1 class="text-h5 font-weight-bold mb-4">Billing</h1>
+      <h1 class="text-h5 font-weight-bold mb-4">{{ $t('billing.title') }}</h1>
 
       <v-row>
         <v-col cols="12" md="7">
@@ -147,7 +153,7 @@ function startNewSale() {
             id="billing-search-input"
             v-model="search"
             prepend-inner-icon="mdi-barcode-scan"
-            placeholder="Search or scan by name, SKU, or barcode"
+            :placeholder="$t('billing.searchPlaceholder')"
             clearable
             autofocus
             class="mb-3"
@@ -162,14 +168,14 @@ function startNewSale() {
               <v-card border class="pa-3 h-100 d-flex flex-column hover-lift">
                 <div class="font-weight-medium">{{ item.name }}</div>
                 <div class="text-caption text-medium-emphasis mb-2">
-                  {{ item.has_variants ? `${item.variants.length} option(s)` : item.sku || item.unit }}
+                  {{ item.has_variants ? $t('billing.optionsCount', { count: item.variants.length }) : item.sku || item.unit }}
                 </div>
 
                 <template v-if="!item.has_variants">
                   <div class="text-body-2 mb-2">
                     {{ item.selling_price || '—' }}
-                    <span v-if="item.stock_quantity <= 0" class="text-error"> · Out of stock</span>
-                    <span v-else class="text-medium-emphasis"> · {{ item.stock_quantity }} in stock</span>
+                    <span v-if="item.stock_quantity <= 0" class="text-error"> · {{ $t('billing.outOfStock') }}</span>
+                    <span v-else class="text-medium-emphasis"> · {{ $t('billing.inStock', { count: item.stock_quantity }) }}</span>
                   </div>
                   <v-btn
                     :id="`add-to-cart-${item.id}`"
@@ -179,7 +185,7 @@ function startNewSale() {
                     class="mt-auto"
                     @click="addToCart(item, item)"
                   >
-                    Add to Cart
+                    {{ $t('billing.addToCart') }}
                   </v-btn>
                 </template>
 
@@ -199,14 +205,14 @@ function startNewSale() {
             </v-col>
 
             <v-col v-if="!searchResults.length" cols="12">
-              <div class="text-center text-body-2 text-medium-emphasis py-8">No products found.</div>
+              <div class="text-center text-body-2 text-medium-emphasis py-8">{{ $t('billing.noProductsFound') }}</div>
             </v-col>
           </v-row>
         </v-col>
 
         <v-col v-if="!mobile" cols="12" md="5">
           <v-card border class="pa-4" style="position: sticky; top: 16px">
-            <div class="text-subtitle-1 font-weight-bold mb-3">Cart</div>
+            <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('billing.cart.title') }}</div>
             <CartPanel
               ref="cartPanelRef"
               v-model:cart="cart"
@@ -214,6 +220,7 @@ function startNewSale() {
               v-model:payment-method="paymentMethod"
               v-model:payment-amount="paymentAmount"
               v-model:redeem-points="redeemPoints"
+              v-model:offer-code="offerCode"
               :customers="customers"
               :submitting="submitting"
               :error-message="errorMessage"
@@ -231,7 +238,7 @@ function startNewSale() {
     <div v-if="mobile && cart.length" class="mobile-cart-bar" @click="mobileCartOpen = true">
       <div class="d-flex align-center pa-3">
         <v-badge :content="cartCount" color="primary" inline class="mr-2" />
-        <span class="text-body-2 flex-grow-1">View Cart</span>
+        <span class="text-body-2 flex-grow-1">{{ $t('billing.viewCart') }}</span>
         <span class="text-subtitle-1 font-weight-bold">{{ cartTotalLabel }}</span>
         <v-icon icon="mdi-chevron-up" class="ml-2" />
       </div>
@@ -240,7 +247,7 @@ function startNewSale() {
     <v-bottom-sheet v-if="mobile" v-model="mobileCartOpen">
       <v-card class="pa-4" style="max-height: 85vh; overflow-y: auto">
         <div class="d-flex align-center justify-space-between mb-3">
-          <div class="text-subtitle-1 font-weight-bold">Cart</div>
+          <div class="text-subtitle-1 font-weight-bold">{{ $t('billing.cart.title') }}</div>
           <v-btn icon="mdi-close" variant="text" size="small" @click="mobileCartOpen = false" />
         </div>
         <CartPanel
@@ -249,6 +256,7 @@ function startNewSale() {
           v-model:payment-method="paymentMethod"
           v-model:payment-amount="paymentAmount"
           v-model:redeem-points="redeemPoints"
+          v-model:offer-code="offerCode"
           :customers="customers"
           :submitting="submitting"
           :error-message="errorMessage"
@@ -261,13 +269,16 @@ function startNewSale() {
     <v-dialog :model-value="!!receipt" max-width="420" persistent>
       <v-card class="pa-6 text-center" v-if="receipt">
         <v-icon icon="mdi-check-circle" color="success" size="48" class="mb-3" />
-        <div class="text-h6 font-weight-bold">Sale Complete</div>
-        <div class="text-body-2 text-medium-emphasis mb-4">Invoice {{ receipt.invoice_number }}</div>
+        <div class="text-h6 font-weight-bold">{{ $t('billing.saleComplete') }}</div>
+        <div class="text-body-2 text-medium-emphasis mb-4">{{ $t('billing.invoiceLabel', { number: receipt.invoice_number }) }}</div>
         <div class="text-h5 font-weight-bold mb-2">{{ receipt.currency }} {{ receipt.total_amount }}</div>
+        <div v-if="Number(receipt.offer_discount_amount) > 0" class="text-caption text-success mb-1">
+          {{ $t('billing.offerApplied', { currency: receipt.currency, amount: receipt.offer_discount_amount }) }}
+        </div>
         <div v-if="receipt.loyalty_points_earned > 0 || receipt.loyalty_points_redeemed > 0" class="text-caption text-medium-emphasis mb-4">
-          <span v-if="receipt.loyalty_points_redeemed > 0">Redeemed {{ receipt.loyalty_points_redeemed }} points ({{ receipt.currency }} {{ receipt.loyalty_discount_amount }} off)</span>
+          <span v-if="receipt.loyalty_points_redeemed > 0">{{ $t('billing.redeemedPoints', { points: receipt.loyalty_points_redeemed, currency: receipt.currency, amount: receipt.loyalty_discount_amount }) }}</span>
           <span v-if="receipt.loyalty_points_redeemed > 0 && receipt.loyalty_points_earned > 0"> &middot; </span>
-          <span v-if="receipt.loyalty_points_earned > 0">Earned {{ receipt.loyalty_points_earned }} points</span>
+          <span v-if="receipt.loyalty_points_earned > 0">{{ $t('billing.earnedPoints', { points: receipt.loyalty_points_earned }) }}</span>
         </div>
         <v-btn
           variant="tonal"
@@ -276,9 +287,9 @@ function startNewSale() {
           class="mb-2"
           :to="{ name: 'invoice-print', params: { id: receipt.id } }"
         >
-          Print Receipt
+          {{ $t('billing.printReceipt') }}
         </v-btn>
-        <v-btn color="primary" block @click="startNewSale">New Sale</v-btn>
+        <v-btn color="primary" block @click="startNewSale">{{ $t('billing.newSale') }}</v-btn>
       </v-card>
     </v-dialog>
   </div>

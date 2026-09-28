@@ -1,8 +1,10 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSubscriptionStore } from '@/stores/subscription'
 
 const sub = useSubscriptionStore()
+const { t } = useI18n()
 
 // Progressive trial-expiry messaging (Phase 2 §9) - quiet until 14 days
 // out, then increasingly urgent, and a clear call to action once the
@@ -13,39 +15,39 @@ const banner = computed(() => {
   switch (sub.status) {
     case 'trialing':
       if (days === null || days > 14) return null
-      return { type: 'info', message: `Your free trial has ${days} day${days === 1 ? '' : 's'} remaining.` }
+      return { type: 'info', message: t('subscription.banner.trialing', { count: days }) }
 
     case 'trial_ending_soon':
-      return {
-        type: 'warning',
-        message: `Your trial ends in ${days} day${days === 1 ? '' : 's'}. Choose a plan to keep using the platform without interruption.`,
-      }
+      return { type: 'warning', message: t('subscription.banner.trialEndingSoon', { count: days }) }
 
     case 'trial_expired':
-      return { type: 'error', message: 'Your free trial has ended. Choose a plan to continue.' }
+      return { type: 'error', message: t('subscription.banner.trialExpired') }
 
     case 'subscription_required':
-      return { type: 'error', message: 'This business needs an active subscription to continue.' }
+      return { type: 'error', message: t('subscription.banner.subscriptionRequired') }
 
     case 'renewal_due':
       return days !== null && days <= 7
-        ? { type: 'warning', message: `Your plan renews in ${days} day${days === 1 ? '' : 's'}.` }
+        ? { type: 'warning', message: t('subscription.banner.renewalDue', { count: days }) }
         : null
 
     case 'past_due':
-      return { type: 'warning', message: 'Your last subscription payment failed. Please update your payment.' }
+      return { type: 'warning', message: t('subscription.banner.pastDue') }
 
     case 'grace_period':
       return {
         type: 'warning',
-        message: `Payment issue - your account will be suspended in ${days ?? 'a few'} day${days === 1 ? '' : 's'} unless this is resolved.`,
+        message:
+          days === null
+            ? t('subscription.banner.gracePeriodUnknownDays')
+            : t('subscription.banner.gracePeriod', { count: days }),
       }
 
     case 'suspended':
-      return { type: 'error', message: 'This business has been suspended due to a subscription issue.' }
+      return { type: 'error', message: t('subscription.banner.suspended') }
 
     case 'cancelled':
-      return { type: 'error', message: 'This business’s subscription was cancelled.' }
+      return { type: 'error', message: t('subscription.banner.cancelled') }
 
     default:
       return null
@@ -72,7 +74,7 @@ const banner = computed(() => {
         variant="flat"
         :to="{ name: 'subscription' }"
       >
-        View Plans
+        {{ $t('subscription.viewPlans') }}
       </v-btn>
     </div>
   </v-alert>

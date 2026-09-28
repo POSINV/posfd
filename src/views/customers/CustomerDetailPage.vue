@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { CustomersApi } from '@/api/customers'
 import { BillingApi } from '@/api/billing'
 import { LoyaltyApi } from '@/api/loyalty'
 import { apiErrorMessage } from '@/api/client'
 
 const props = defineProps({ id: { type: String, required: true } })
+const { t } = useI18n()
 
 const customer = ref(null)
 const summary = ref(null)
@@ -14,10 +16,22 @@ const loyalty = ref(null)
 const loading = ref(true)
 const errorMessage = ref('')
 
-const entryTypeLabels = { earn: 'Earned', redeem: 'Redeemed', bonus: 'Bonus', expire: 'Expired', adjustment: 'Adjusted' }
+const entryTypeLabels = computed(() => ({
+  earn: t('loyalty.entryTypes.earn'),
+  redeem: t('loyalty.entryTypes.redeem'),
+  bonus: t('loyalty.entryTypes.bonus'),
+  expire: t('loyalty.entryTypes.expire'),
+  adjustment: t('loyalty.entryTypes.adjustment'),
+}))
 
 const segmentColors = { vip: 'purple', high_value: 'primary', regular: 'success', new: 'info', inactive: 'default' }
-const segmentLabels = { vip: 'VIP', high_value: 'High value', regular: 'Regular', new: 'New', inactive: 'Inactive' }
+const segmentLabels = computed(() => ({
+  vip: t('common.segments.vip'),
+  high_value: t('common.segments.highValue'),
+  regular: t('common.segments.regular'),
+  new: t('common.segments.new'),
+  inactive: t('common.segments.inactive'),
+}))
 
 onMounted(load)
 
@@ -47,7 +61,7 @@ async function load() {
   <v-container max-width="900" class="py-8">
     <div class="d-flex align-center mb-6">
       <v-btn icon="mdi-arrow-left" variant="text" :to="{ name: 'customers' }" class="mr-2" />
-      <h1 class="text-h5 font-weight-bold">Customer</h1>
+      <h1 class="text-h5 font-weight-bold">{{ $t('customers.customer') }}</h1>
     </div>
 
     <div v-if="loading" class="d-flex justify-center py-12">
@@ -65,7 +79,7 @@ async function load() {
           </v-chip>
         </div>
         <div class="text-body-2 text-medium-emphasis">
-          {{ [customer.phone, customer.email, customer.address].filter(Boolean).join(' · ') || 'No contact info' }}
+          {{ [customer.phone, customer.email, customer.address].filter(Boolean).join(' · ') || $t('customers.noContactInfo') }}
         </div>
         <div v-if="customer.notes" class="text-body-2 text-medium-emphasis mt-2">{{ customer.notes }}</div>
       </v-card>
@@ -73,25 +87,25 @@ async function load() {
       <v-row class="mb-6">
         <v-col cols="6" sm="3">
           <v-card class="pa-4" border>
-            <div class="text-caption text-medium-emphasis">Total spent</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('customers.totalSpent') }}</div>
             <div class="text-h6 font-weight-bold">{{ summary.total_spent }}</div>
           </v-card>
         </v-col>
         <v-col cols="6" sm="3">
           <v-card class="pa-4" border>
-            <div class="text-caption text-medium-emphasis">Visits</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('customers.visits') }}</div>
             <div class="text-h6 font-weight-bold">{{ summary.visit_count }}</div>
           </v-card>
         </v-col>
         <v-col cols="6" sm="3">
           <v-card class="pa-4" border>
-            <div class="text-caption text-medium-emphasis">Average bill</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('customers.averageBill') }}</div>
             <div class="text-h6 font-weight-bold">{{ summary.average_bill }}</div>
           </v-card>
         </v-col>
         <v-col cols="6" sm="3">
           <v-card class="pa-4" border :class="{ 'bg-warning-lighten-5': Number(summary.outstanding_balance) > 0 }">
-            <div class="text-caption text-medium-emphasis">Outstanding</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('customers.outstanding') }}</div>
             <div class="text-h6 font-weight-bold" :class="{ 'text-warning': Number(summary.outstanding_balance) > 0 }">
               {{ summary.outstanding_balance }}
             </div>
@@ -102,9 +116,9 @@ async function load() {
       <v-row class="mb-6">
         <v-col cols="12" sm="6">
           <v-card class="pa-4 h-100" border>
-            <div class="text-subtitle-2 font-weight-bold mb-3">Frequently Purchased</div>
+            <div class="text-subtitle-2 font-weight-bold mb-3">{{ $t('customers.frequentlyPurchased') }}</div>
             <div v-if="!summary.top_products.length" class="text-body-2 text-medium-emphasis">
-              No purchases yet.
+              {{ $t('customers.noPurchasesYet') }}
             </div>
             <v-list v-else density="compact" class="pa-0">
               <v-list-item v-for="p in summary.top_products" :key="p.name" class="px-0">
@@ -118,14 +132,14 @@ async function load() {
         </v-col>
         <v-col cols="12" sm="6">
           <v-card class="pa-4 h-100" border>
-            <div class="text-subtitle-2 font-weight-bold mb-3">Communication Preferences</div>
+            <div class="text-subtitle-2 font-weight-bold mb-3">{{ $t('customers.communicationPreferences') }}</div>
             <div class="d-flex align-center ga-2 mb-2">
               <v-icon :icon="customer.accepts_transactional_messages ? 'mdi-check-circle' : 'mdi-close-circle-outline'" :color="customer.accepts_transactional_messages ? 'success' : 'medium-emphasis'" size="18" />
-              <span class="text-body-2">Transactional messages (bills, receipts)</span>
+              <span class="text-body-2">{{ $t('customers.allowTransactional') }}</span>
             </div>
             <div class="d-flex align-center ga-2">
               <v-icon :icon="customer.accepts_promotional_messages ? 'mdi-check-circle' : 'mdi-close-circle-outline'" :color="customer.accepts_promotional_messages ? 'success' : 'medium-emphasis'" size="18" />
-              <span class="text-body-2">Promotional messages (offers, campaigns)</span>
+              <span class="text-body-2">{{ $t('customers.allowPromotional') }}</span>
             </div>
           </v-card>
         </v-col>
@@ -133,12 +147,12 @@ async function load() {
 
       <template v-if="loyalty">
         <div class="d-flex align-center justify-space-between mb-3">
-          <div class="text-subtitle-1 font-weight-bold">Loyalty Points</div>
-          <v-chip color="primary" variant="tonal">{{ loyalty.balance }} points</v-chip>
+          <div class="text-subtitle-1 font-weight-bold">{{ $t('customers.loyaltyPoints') }}</div>
+          <v-chip color="primary" variant="tonal">{{ $t('customers.pointsCount', { count: loyalty.balance }) }}</v-chip>
         </div>
         <v-card border class="mb-6">
           <div v-if="!loyalty.data.length" class="pa-8 text-center text-body-2 text-medium-emphasis">
-            No loyalty activity yet.
+            {{ $t('customers.noLoyaltyActivity') }}
           </div>
           <v-list v-else lines="two">
             <v-list-item v-for="entry in loyalty.data" :key="entry.id">
@@ -151,17 +165,17 @@ async function load() {
                 <span class="font-weight-medium mr-3" :class="entry.points > 0 ? 'text-success' : 'text-error'">
                   {{ entry.points > 0 ? '+' : '' }}{{ entry.points }}
                 </span>
-                <span class="text-body-2 text-medium-emphasis">bal {{ entry.balance_after }}</span>
+                <span class="text-body-2 text-medium-emphasis">{{ $t('customers.balanceAbbrev', { count: entry.balance_after }) }}</span>
               </template>
             </v-list-item>
           </v-list>
         </v-card>
       </template>
 
-      <div class="text-subtitle-1 font-weight-bold mb-3">Recent Bills</div>
+      <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('customers.recentBills') }}</div>
       <v-card border>
         <div v-if="!invoices.length" class="pa-8 text-center text-body-2 text-medium-emphasis">
-          No bills yet.
+          {{ $t('customers.noBillsYet') }}
         </div>
         <v-list v-else lines="two">
           <v-list-item
@@ -174,7 +188,7 @@ async function load() {
             <template #append>
               <span class="font-weight-medium mr-3">{{ invoice.currency }} {{ invoice.total_amount }}</span>
               <v-chip size="small" :color="invoice.status === 'cancelled' ? 'error' : 'default'" variant="tonal">
-                {{ invoice.status }}
+                {{ $t(`common.invoiceStatus.${invoice.status}`) }}
               </v-chip>
             </template>
           </v-list-item>

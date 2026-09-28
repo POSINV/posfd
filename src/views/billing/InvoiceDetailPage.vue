@@ -1,9 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BillingApi } from '@/api/billing'
 import { apiErrorMessage } from '@/api/client'
 
 const props = defineProps({ id: { type: String, required: true } })
+const { t } = useI18n()
+
+const paymentMethodOptions = computed(() => [
+  { title: t('billing.cart.paymentMethods.cash'), value: 'cash' },
+  { title: t('billing.cart.paymentMethods.card'), value: 'card' },
+  { title: t('billing.cart.paymentMethods.upi'), value: 'upi' },
+  { title: t('billing.cart.paymentMethods.credit'), value: 'credit' },
+  { title: t('billing.cart.paymentMethods.other'), value: 'other' },
+])
 
 const invoice = ref(null)
 const loading = ref(true)
@@ -69,7 +79,7 @@ async function confirmCancel() {
   <v-container max-width="720" class="py-8">
       <div class="d-flex align-center mb-6">
         <v-btn icon="mdi-arrow-left" variant="text" :to="{ name: 'invoices' }" class="mr-2" />
-        <h1 class="text-h5 font-weight-bold">Invoice</h1>
+        <h1 class="text-h5 font-weight-bold">{{ $t('invoices.invoice') }}</h1>
       </div>
 
       <div v-if="loading" class="d-flex justify-center py-12">
@@ -84,22 +94,22 @@ async function confirmCancel() {
             <div>
               <div class="text-h6 font-weight-bold d-flex align-center ga-2">
                 {{ invoice.invoice_number }}
-                <v-chip v-if="invoice.source === 'migrated'" size="small" color="info" variant="tonal">Migrated</v-chip>
+                <v-chip v-if="invoice.source === 'migrated'" size="small" color="info" variant="tonal">{{ $t('invoices.migrated') }}</v-chip>
               </div>
               <div class="text-caption text-medium-emphasis">
-                {{ new Date(invoice.issued_at).toLocaleString() }} · {{ invoice.customer?.name || 'Walk-in' }}
+                {{ new Date(invoice.issued_at).toLocaleString() }} · {{ invoice.customer?.name || $t('dashboard.walkIn') }}
               </div>
             </div>
             <div class="d-flex ga-2">
               <v-chip size="small" :color="invoice.status === 'cancelled' ? 'error' : 'default'" variant="tonal">
-                {{ invoice.status }}
+                {{ $t(`common.invoiceStatus.${invoice.status}`) }}
               </v-chip>
               <v-chip
                 size="small"
                 :color="{ paid: 'success', partial: 'warning', unpaid: 'error' }[invoice.payment_status]"
                 variant="tonal"
               >
-                {{ invoice.payment_status }}
+                {{ $t(`common.paymentStatus.${invoice.payment_status}`) }}
               </v-chip>
             </div>
           </div>
@@ -107,12 +117,12 @@ async function confirmCancel() {
           <v-table density="comfortable">
             <thead>
               <tr>
-                <th>Item</th>
-                <th class="text-right">Qty</th>
-                <th class="text-right">Unit Price</th>
-                <th class="text-right">Discount</th>
-                <th class="text-right">Tax</th>
-                <th class="text-right">Total</th>
+                <th>{{ $t('invoices.item') }}</th>
+                <th class="text-right">{{ $t('stockMovements.qty') }}</th>
+                <th class="text-right">{{ $t('invoices.unitPrice') }}</th>
+                <th class="text-right">{{ $t('billing.cart.discount') }}</th>
+                <th class="text-right">{{ $t('billing.cart.tax') }}</th>
+                <th class="text-right">{{ $t('billing.cart.total') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -132,30 +142,30 @@ async function confirmCancel() {
           <div class="d-flex justify-end">
             <div style="min-width: 240px">
               <div class="d-flex justify-space-between text-body-2">
-                <span>Subtotal</span><span>{{ invoice.subtotal }}</span>
+                <span>{{ $t('billing.cart.subtotal') }}</span><span>{{ invoice.subtotal }}</span>
               </div>
               <div class="d-flex justify-space-between text-body-2">
-                <span>Discount</span><span>-{{ invoice.discount_amount }}</span>
+                <span>{{ $t('billing.cart.discount') }}</span><span>-{{ invoice.discount_amount }}</span>
               </div>
               <div class="d-flex justify-space-between text-body-2">
-                <span>Tax</span><span>{{ invoice.tax_amount }}</span>
+                <span>{{ $t('billing.cart.tax') }}</span><span>{{ invoice.tax_amount }}</span>
               </div>
               <div class="d-flex justify-space-between text-h6 font-weight-bold mt-1">
-                <span>Total</span><span>{{ invoice.currency }} {{ invoice.total_amount }}</span>
+                <span>{{ $t('billing.cart.total') }}</span><span>{{ invoice.currency }} {{ invoice.total_amount }}</span>
               </div>
               <div class="d-flex justify-space-between text-body-2 text-medium-emphasis mt-2">
-                <span>Paid</span><span>{{ invoice.amount_paid }}</span>
+                <span>{{ $t('invoices.paid') }}</span><span>{{ invoice.amount_paid }}</span>
               </div>
             </div>
           </div>
         </v-card>
 
         <v-card class="pa-6 mb-6" border>
-          <div class="text-subtitle-1 font-weight-bold mb-3">Payments</div>
-          <div v-if="!invoice.payments.length" class="text-body-2 text-medium-emphasis">No payments recorded.</div>
+          <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('invoices.payments') }}</div>
+          <div v-if="!invoice.payments.length" class="text-body-2 text-medium-emphasis">{{ $t('invoices.noPaymentsRecorded') }}</div>
           <v-list v-else density="comfortable">
             <v-list-item v-for="payment in invoice.payments" :key="payment.id">
-              <v-list-item-title>{{ payment.method }} · {{ payment.amount }}</v-list-item-title>
+              <v-list-item-title>{{ $t(`billing.cart.paymentMethods.${payment.method}`) }} · {{ payment.amount }}</v-list-item-title>
               <v-list-item-subtitle>{{ new Date(payment.received_at).toLocaleString() }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
@@ -168,7 +178,7 @@ async function confirmCancel() {
             prepend-icon="mdi-printer-outline"
             :to="{ name: 'invoice-print', params: { id: invoice.id } }"
           >
-            Print / PDF
+            {{ $t('invoices.printPdf') }}
           </v-btn>
           <v-btn
             v-if="invoice.status !== 'cancelled' && invoice.payment_status !== 'paid'"
@@ -177,7 +187,7 @@ async function confirmCancel() {
             variant="tonal"
             @click="openPaymentDialog"
           >
-            Record Payment
+            {{ $t('invoices.recordPayment') }}
           </v-btn>
           <v-btn
             v-if="invoice.status !== 'cancelled'"
@@ -186,7 +196,7 @@ async function confirmCancel() {
             variant="tonal"
             @click="cancelDialogOpen = true"
           >
-            Cancel Invoice
+            {{ $t('invoices.cancelInvoice') }}
           </v-btn>
         </div>
       </template>
@@ -194,38 +204,37 @@ async function confirmCancel() {
 
     <v-dialog v-model="paymentDialogOpen" max-width="420">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Record Payment</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('invoices.recordPayment') }}</v-card-title>
         <v-card-text>
           <v-select
             v-model="paymentForm.method"
-            :items="['cash', 'card', 'upi', 'credit', 'other']"
-            label="Method"
+            :items="paymentMethodOptions"
+            :label="$t('invoices.method')"
             class="mb-2"
           />
-          <v-text-field v-model="paymentForm.amount" label="Amount" />
+          <v-text-field v-model="paymentForm.amount" :label="$t('invoices.amount')" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="paymentDialogOpen = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="savingPayment" @click="savePayment">Save</v-btn>
+          <v-btn variant="text" @click="paymentDialogOpen = false">{{ $t('common.cancel') }}</v-btn>
+          <v-btn color="primary" :loading="savingPayment" @click="savePayment">{{ $t('common.save') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="cancelDialogOpen" max-width="420">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Cancel this invoice?</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('invoices.cancelConfirmTitle') }}</v-card-title>
         <v-card-text>
           <template v-if="invoice?.source === 'migrated'">
-            This is a migrated historical invoice - it never affected current stock, so cancelling
-            it won't change stock either. This cannot be undone.
+            {{ $t('invoices.cancelMigratedHint') }}
           </template>
-          <template v-else>Stock for its items will be restored. This cannot be undone.</template>
+          <template v-else>{{ $t('invoices.cancelHint') }}</template>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="cancelDialogOpen = false">Back</v-btn>
-          <v-btn color="error" :loading="cancelling" @click="confirmCancel">Cancel Invoice</v-btn>
+          <v-btn variant="text" @click="cancelDialogOpen = false">{{ $t('common.back') }}</v-btn>
+          <v-btn color="error" :loading="cancelling" @click="confirmCancel">{{ $t('invoices.cancelInvoice') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

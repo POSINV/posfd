@@ -1,10 +1,18 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import { BillingApi } from '@/api/billing'
 import { apiErrorMessage } from '@/api/client'
 
 const { mobile } = useDisplay()
+const { t } = useI18n()
+
+const statusOptions = computed(() => [
+  { title: t('invoices.statusAll'), value: null },
+  { title: t('invoices.statusCompleted'), value: 'completed' },
+  { title: t('invoices.statusCancelled'), value: 'cancelled' },
+])
 const invoices = ref([])
 const pagination = ref({ page: 1, page_size: 25, total_count: 0 })
 const page = ref(1)
@@ -42,16 +50,16 @@ function paymentColor(s) {
   <v-container class="py-8">
       <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-4">
         <div>
-          <h1 class="text-h5 font-weight-bold">Invoices</h1>
-          <p class="text-body-2 text-medium-emphasis">{{ pagination.total_count }} invoice(s)</p>
+          <h1 class="text-h5 font-weight-bold">{{ $t('nav.invoices') }}</h1>
+          <p class="text-body-2 text-medium-emphasis">{{ $t('invoices.count', { count: pagination.total_count }) }}</p>
         </div>
-        <v-btn color="primary" prepend-icon="mdi-plus" :to="{ name: 'billing' }">New Sale</v-btn>
+        <v-btn color="primary" prepend-icon="mdi-plus" :to="{ name: 'billing' }">{{ $t('billing.newSale') }}</v-btn>
       </div>
 
       <v-select
         v-model="status"
-        :items="[{ title: 'All', value: null }, { title: 'Completed', value: 'completed' }, { title: 'Cancelled', value: 'cancelled' }]"
-        label="Status"
+        :items="statusOptions"
+        :label="$t('products.table.status')"
         density="comfortable"
         style="max-width: 240px"
         class="mb-4"
@@ -66,8 +74,8 @@ function paymentColor(s) {
       <v-card v-else border>
         <div v-if="!invoices.length" class="pa-12 text-center">
           <v-icon icon="mdi-receipt-text-outline" size="40" color="medium-emphasis" class="mb-3" />
-          <div class="text-body-1 font-weight-medium">No invoices yet</div>
-          <div class="text-body-2 text-medium-emphasis">Sales you complete in Billing show up here.</div>
+          <div class="text-body-1 font-weight-medium">{{ $t('invoices.emptyTitle') }}</div>
+          <div class="text-body-2 text-medium-emphasis">{{ $t('invoices.emptyHint') }}</div>
         </div>
 
         <div v-if="mobile">
@@ -82,10 +90,10 @@ function paymentColor(s) {
               <div>
                 <div class="font-weight-medium d-flex align-center ga-1">
                   {{ invoice.invoice_number }}
-                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">Migrated</v-chip>
+                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">{{ $t('invoices.migrated') }}</v-chip>
                 </div>
                 <div class="text-caption text-medium-emphasis">
-                  {{ invoice.customer?.name || 'Walk-in' }} ·
+                  {{ invoice.customer?.name || $t('dashboard.walkIn') }} ·
                   {{ new Date(invoice.issued_at).toLocaleDateString() }}
                 </div>
               </div>
@@ -95,10 +103,10 @@ function paymentColor(s) {
             </div>
             <div class="d-flex ga-2 mt-2">
               <v-chip size="small" :color="paymentColor(invoice.payment_status)" variant="tonal">
-                {{ invoice.payment_status }}
+                {{ $t(`common.paymentStatus.${invoice.payment_status}`) }}
               </v-chip>
               <v-chip size="small" :color="invoice.status === 'cancelled' ? 'error' : 'default'" variant="tonal">
-                {{ invoice.status }}
+                {{ $t(`common.invoiceStatus.${invoice.status}`) }}
               </v-chip>
             </div>
           </div>
@@ -107,12 +115,12 @@ function paymentColor(s) {
         <v-table v-else>
           <thead>
             <tr>
-              <th>Invoice #</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Total</th>
-              <th>Payment</th>
-              <th>Status</th>
+              <th>{{ $t('invoices.invoiceHash') }}</th>
+              <th>{{ $t('nav.customers') }}</th>
+              <th>{{ $t('stockMovements.date') }}</th>
+              <th>{{ $t('invoices.total') }}</th>
+              <th>{{ $t('invoices.payment') }}</th>
+              <th>{{ $t('products.table.status') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -126,20 +134,20 @@ function paymentColor(s) {
               <td class="font-weight-medium">
                 <div class="d-flex align-center ga-1">
                   {{ invoice.invoice_number }}
-                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">Migrated</v-chip>
+                  <v-chip v-if="invoice.source === 'migrated'" size="x-small" color="info" variant="tonal">{{ $t('invoices.migrated') }}</v-chip>
                 </div>
               </td>
-              <td>{{ invoice.customer?.name || 'Walk-in' }}</td>
+              <td>{{ invoice.customer?.name || $t('dashboard.walkIn') }}</td>
               <td>{{ new Date(invoice.issued_at).toLocaleString() }}</td>
               <td>{{ invoice.currency }} {{ invoice.total_amount }}</td>
               <td>
                 <v-chip size="small" :color="paymentColor(invoice.payment_status)" variant="tonal">
-                  {{ invoice.payment_status }}
+                  {{ $t(`common.paymentStatus.${invoice.payment_status}`) }}
                 </v-chip>
               </td>
               <td>
                 <v-chip size="small" :color="invoice.status === 'cancelled' ? 'error' : 'default'" variant="tonal">
-                  {{ invoice.status }}
+                  {{ $t(`common.invoiceStatus.${invoice.status}`) }}
                 </v-chip>
               </td>
             </tr>

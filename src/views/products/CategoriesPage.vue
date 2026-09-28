@@ -85,11 +85,11 @@ function parentOptions(excludeId) {
   <v-container class="py-8">
       <div class="d-flex align-center justify-space-between mb-6">
         <div>
-          <h1 class="text-h5 font-weight-bold">Categories</h1>
-          <p class="text-body-2 text-medium-emphasis">Organize your products into categories</p>
+          <h1 class="text-h5 font-weight-bold">{{ $t('categories.title') }}</h1>
+          <p class="text-body-2 text-medium-emphasis">{{ $t('categories.subtitle') }}</p>
         </div>
         <v-btn id="add-category-btn" color="primary" prepend-icon="mdi-plus" @click="openCreate">
-          Add Category
+          {{ $t('categories.addCategory') }}
         </v-btn>
       </div>
 
@@ -102,8 +102,8 @@ function parentOptions(excludeId) {
       <v-card v-else border>
         <div v-if="!store.categories.length" id="categories-empty" class="pa-12 text-center">
           <v-icon icon="mdi-shape-outline" size="40" color="medium-emphasis" class="mb-3" />
-          <div class="text-body-1 font-weight-medium">No categories yet</div>
-          <div class="text-body-2 text-medium-emphasis">Add your first category to start organizing products.</div>
+          <div class="text-body-1 font-weight-medium">{{ $t('categories.emptyTitle') }}</div>
+          <div class="text-body-2 text-medium-emphasis">{{ $t('categories.emptyHint') }}</div>
         </div>
 
         <v-list v-else lines="two">
@@ -114,7 +114,7 @@ function parentOptions(excludeId) {
           >
             <v-list-item-title>{{ category.name }}</v-list-item-title>
             <v-list-item-subtitle v-if="category.parent_id">
-              Under {{ store.categories.find((c) => c.id === category.parent_id)?.name }}
+              {{ $t('categories.under', { name: store.categories.find((c) => c.id === category.parent_id)?.name }) }}
             </v-list-item-subtitle>
 
             <template #append>
@@ -142,43 +142,43 @@ function parentOptions(excludeId) {
     <v-dialog v-model="dialogOpen" max-width="480">
       <v-card class="pa-4">
         <v-card-title class="font-weight-bold">
-          {{ editingCategory ? 'Edit Category' : 'Add Category' }}
+          {{ editingCategory ? $t('categories.editCategory') : $t('categories.addCategory') }}
         </v-card-title>
         <v-card-text>
           <v-text-field
             id="category-name-input"
             v-model="form.name"
-            label="Name"
+            :label="$t('common.name')"
             :error-messages="formErrors.name"
             autofocus
           />
           <v-select
             id="category-parent-select"
             v-model="form.parent_id"
-            label="Parent category (optional)"
+            :label="$t('categories.parentCategory')"
             :items="parentOptions(editingCategory?.id)"
             clearable
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogOpen = false">Cancel</v-btn>
-          <v-btn id="save-category-btn" color="primary" :loading="saving" @click="save">Save</v-btn>
+          <v-btn variant="text" @click="dialogOpen = false">{{ $t('common.cancel') }}</v-btn>
+          <v-btn id="save-category-btn" color="primary" :loading="saving" @click="save">{{ $t('common.save') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog :model-value="!!deleteTarget" max-width="420" @update:model-value="deleteTarget = null">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Delete category?</v-card-title>
+        <v-card-title class="font-weight-bold">{{ $t('categories.deleteTitle') }}</v-card-title>
         <v-card-text>
-          "{{ deleteTarget?.name }}" will be removed. Products in it will become uncategorized.
+          {{ $t('categories.deleteConfirm', { name: deleteTarget?.name }) }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="deleteTarget = null">Cancel</v-btn>
+          <v-btn variant="text" @click="deleteTarget = null">{{ $t('common.cancel') }}</v-btn>
           <v-btn id="confirm-delete-category-btn" color="error" :loading="deleting" @click="confirmDelete">
-            Delete
+            {{ $t('common.delete') }}
           </v-btn>
         </v-card-actions>
       </v-card>

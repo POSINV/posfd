@@ -99,13 +99,13 @@ async function confirmDelete() {
   <div>
     <div class="d-flex align-center justify-space-between mb-3">
       <div>
-        <div class="text-subtitle-2 font-weight-medium">Quantity / wholesale pricing</div>
+        <div class="text-subtitle-2 font-weight-medium">{{ $t('priceTiers.title') }}</div>
         <div class="text-caption text-medium-emphasis">
-          Base price: {{ basePrice || '—' }}. Add a tier for bulk, wholesale, or scheduled pricing.
+          {{ $t('priceTiers.basePrice', { price: basePrice || '—' }) }}
         </div>
       </div>
       <v-btn size="small" variant="tonal" color="primary" prepend-icon="mdi-plus" @click="openCreate">
-        Add Tier
+        {{ $t('priceTiers.addTier') }}
       </v-btn>
     </div>
 
@@ -118,17 +118,17 @@ async function confirmDelete() {
     </div>
 
     <div v-else-if="!tiers.length" class="text-body-2 text-medium-emphasis py-2">
-      No pricing tiers yet — this item always sells at its base price.
+      {{ $t('priceTiers.empty') }}
     </div>
 
     <v-table v-else density="comfortable">
       <thead>
         <tr>
-          <th>Label</th>
-          <th>Min. qty</th>
-          <th>Price</th>
-          <th>Valid</th>
-          <th class="text-right">Actions</th>
+          <th>{{ $t('priceTiers.label') }}</th>
+          <th>{{ $t('priceTiers.minQty') }}</th>
+          <th>{{ $t('products.form.sellingPrice') }}</th>
+          <th>{{ $t('priceTiers.valid') }}</th>
+          <th class="text-right">{{ $t('products.table.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -138,9 +138,9 @@ async function confirmDelete() {
           <td>{{ tier.price }}</td>
           <td>
             <span v-if="tier.effective_from || tier.effective_to">
-              {{ tier.effective_from || 'anytime' }} → {{ tier.effective_to || 'ongoing' }}
+              {{ tier.effective_from || $t('priceTiers.anytime') }} → {{ tier.effective_to || $t('priceTiers.ongoing') }}
             </span>
-            <span v-else class="text-medium-emphasis">Always</span>
+            <span v-else class="text-medium-emphasis">{{ $t('priceTiers.always') }}</span>
           </td>
           <td class="text-right">
             <v-btn icon="mdi-pencil-outline" variant="text" size="x-small" @click="openEdit(tier)" />
@@ -158,12 +158,12 @@ async function confirmDelete() {
 
     <v-dialog v-model="dialogOpen" max-width="480">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">{{ editingTier ? 'Edit Tier' : 'Add Pricing Tier' }}</v-card-title>
+        <v-card-title class="font-weight-bold">{{ editingTier ? $t('priceTiers.editTier') : $t('priceTiers.addPricingTier') }}</v-card-title>
         <v-card-text>
           <v-text-field
             v-model="form.label"
-            label="Label"
-            hint="e.g. Wholesale, Bulk 10+, Festival Sale"
+            :label="$t('priceTiers.label')"
+            :hint="$t('priceTiers.labelHint')"
             :error-messages="formErrors.label"
             class="mb-2"
           />
@@ -173,21 +173,21 @@ async function confirmDelete() {
                 v-model.number="form.min_quantity"
                 type="number"
                 min="1"
-                label="Min. quantity"
+                :label="$t('priceTiers.minQty')"
                 :error-messages="formErrors.min_quantity"
               />
             </v-col>
             <v-col cols="6">
-              <v-text-field v-model="form.price" label="Price" :error-messages="formErrors.price" />
+              <v-text-field v-model="form.price" :label="$t('products.form.sellingPrice')" :error-messages="formErrors.price" />
             </v-col>
             <v-col cols="6">
-              <v-text-field v-model="form.effective_from" type="date" label="Effective from (optional)" />
+              <v-text-field v-model="form.effective_from" type="date" :label="$t('priceTiers.effectiveFrom')" />
             </v-col>
             <v-col cols="6">
               <v-text-field
                 v-model="form.effective_to"
                 type="date"
-                label="Effective to (optional)"
+                :label="$t('priceTiers.effectiveTo')"
                 :error-messages="formErrors.effective_to"
               />
             </v-col>
@@ -195,20 +195,20 @@ async function confirmDelete() {
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogOpen = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="saving" @click="save">Save</v-btn>
+          <v-btn variant="text" @click="dialogOpen = false">{{ $t('common.cancel') }}</v-btn>
+          <v-btn color="primary" :loading="saving" @click="save">{{ $t('common.save') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog :model-value="!!deleteTarget" max-width="420" @update:model-value="deleteTarget = null">
       <v-card class="pa-4">
-        <v-card-title class="font-weight-bold">Delete tier?</v-card-title>
-        <v-card-text>"{{ deleteTarget?.label }}" will be removed.</v-card-text>
+        <v-card-title class="font-weight-bold">{{ $t('priceTiers.deleteTitle') }}</v-card-title>
+        <v-card-text>{{ $t('priceTiers.deleteConfirm', { label: deleteTarget?.label }) }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="deleteTarget = null">Cancel</v-btn>
-          <v-btn color="error" @click="confirmDelete">Delete</v-btn>
+          <v-btn variant="text" @click="deleteTarget = null">{{ $t('common.cancel') }}</v-btn>
+          <v-btn color="error" @click="confirmDelete">{{ $t('common.delete') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

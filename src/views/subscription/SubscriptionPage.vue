@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { SubscriptionApi } from '@/api/subscription'
@@ -8,24 +9,25 @@ import { loadRazorpayCheckout } from '@/lib/razorpay'
 
 const auth = useAuthStore()
 const sub = useSubscriptionStore()
+const { t } = useI18n()
 const payments = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
 const successMessage = ref('')
 const subscribingPlanId = ref(null)
 
-const statusLabels = {
-  trialing: 'Free trial',
-  trial_ending_soon: 'Free trial (ending soon)',
-  trial_expired: 'Trial expired',
-  subscription_required: 'Subscription required',
-  active: 'Active',
-  renewal_due: 'Renewal due',
-  past_due: 'Payment failed',
-  grace_period: 'Grace period',
-  suspended: 'Suspended',
-  cancelled: 'Cancelled',
-}
+const statusLabels = computed(() => ({
+  trialing: t('subscription.status.trialing'),
+  trial_ending_soon: t('subscription.status.trialEndingSoon'),
+  trial_expired: t('subscription.status.trialExpired'),
+  subscription_required: t('subscription.status.subscriptionRequired'),
+  active: t('subscription.status.active'),
+  renewal_due: t('subscription.status.renewalDue'),
+  past_due: t('subscription.status.pastDue'),
+  grace_period: t('subscription.status.gracePeriod'),
+  suspended: t('subscription.status.suspended'),
+  cancelled: t('subscription.status.cancelled'),
+}))
 
 const statusColors = {
   trialing: 'info',
@@ -73,8 +75,8 @@ async function subscribe(plan) {
       order_id: checkout.order_id,
       amount: Math.round(Number(checkout.amount) * 100),
       currency: checkout.currency,
-      name: auth.currentBusiness?.name || 'Subscription',
-      description: `${plan.name} plan`,
+      name: auth.currentBusiness?.name || t('nav.subscription'),
+      description: t('subscription.planSuffix', { plan: plan.name }),
       prefill: { name: auth.user?.full_name, email: auth.user?.email },
       theme: { color: '#1E88E5' },
       handler: async (response) => {
@@ -84,10 +86,10 @@ async function subscribe(plan) {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           })
-          successMessage.value = `You're now subscribed to ${plan.name}.`
+          successMessage.value = t('subscription.nowSubscribed', { plan: plan.name })
           await load()
         } catch (error) {
-          errorMessage.value = apiErrorMessage(error, 'Payment verification failed. Please contact support before retrying.')
+          errorMessage.value = apiErrorMessage(error, t('subscription.verificationFailed'))
         } finally {
           subscribingPlanId.value = null
         }
@@ -109,9 +111,9 @@ async function subscribe(plan) {
 
 <template>
   <v-container max-width="900" class="py-8">
-    <h1 class="text-h5 font-weight-bold mb-1">Subscription</h1>
+    <h1 class="text-h5 font-weight-bold mb-1">{{ $t('nav.subscription') }}</h1>
     <p class="text-body-2 text-medium-emphasis mb-6">
-      Your platform plan and billing - separate from the payments your own customers make you.
+      {{ $t('subscription.subtitle') }}
     </p>
 
     <div v-if="loading" class="d-flex justify-center py-12">
@@ -125,9 +127,9 @@ async function subscribe(plan) {
       <v-card class="pa-6 mb-6" border>
         <div class="d-flex align-center justify-space-between flex-wrap ga-2">
           <div>
-            <div class="text-caption text-medium-emphasis">Current status</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('subscription.currentStatus') }}</div>
             <div class="text-h6 font-weight-bold">
-              {{ sub.plan?.name || 'No plan selected' }}
+              {{ sub.plan?.name || $t('subscription.noPlanSelected') }}
             </div>
           </div>
           <v-chip :color="statusColors[sub.status] || 'default'" variant="tonal">
@@ -136,7 +138,7 @@ async function subscribe(plan) {
         </div>
 
         <div v-if="sub.daysRemaining !== null" class="text-body-2 text-medium-emphasis mt-3">
-          {{ sub.daysRemaining }} day{{ sub.daysRemaining === 1 ? '' : 's' }} remaining
+          {{ $t('subscription.daysRemaining', { count: sub.daysRemaining }) }}
         </div>
 
         <v-alert
@@ -146,12 +148,11 @@ async function subscribe(plan) {
           density="comfortable"
           class="mt-4"
         >
-          This business currently cannot use the platform. Choose a plan below, or contact us to
-          reactivate.
+          {{ $t('subscription.cannotUsePlatform') }}
         </v-alert>
       </v-card>
 
-      <div class="text-subtitle-1 font-weight-bold mb-3">Plans</div>
+      <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('subscription.plans') }}</div>
       <v-row class="mb-6">
         <v-col v-for="plan in sub.plans" :key="plan.id" cols="12" sm="4">
           <v-card
@@ -162,12 +163,12 @@ async function subscribe(plan) {
           >
             <div class="d-flex align-center justify-space-between mb-1">
               <div class="font-weight-bold">{{ plan.name }}</div>
-              <v-chip v-if="isCurrentPlan(plan)" size="small" color="primary" variant="tonal">Current</v-chip>
+              <v-chip v-if="isCurrentPlan(plan)" size="small" color="primary" variant="tonal">{{ $t('subscription.current') }}</v-chip>
             </div>
             <div class="text-h5 font-weight-bold mb-1">
               {{ plan.currency }} {{ plan.price }}
               <span class="text-body-2 text-medium-emphasis font-weight-regular">
-                / {{ plan.billing_period === 'monthly' ? 'mo' : 'yr' }}
+                / {{ plan.billing_period === 'monthly' ? $t('subscription.mo') : $t('subscription.yr') }}
               </span>
             </div>
             <p class="text-body-2 text-medium-emphasis mb-3">{{ plan.description }}</p>
@@ -195,7 +196,7 @@ async function subscribe(plan) {
               :disabled="subscribingPlanId !== null && subscribingPlanId !== plan.id"
               @click="subscribe(plan)"
             >
-              {{ isCurrentPlan(plan) ? 'Renew' : 'Subscribe' }}
+              {{ isCurrentPlan(plan) ? $t('subscription.renew') : $t('subscription.subscribe') }}
             </v-btn>
           </v-card>
         </v-col>
@@ -205,24 +206,24 @@ async function subscribe(plan) {
         <div class="d-flex align-center ga-3">
           <v-icon icon="mdi-shield-check-outline" color="primary" />
           <div class="text-body-2">
-            Payments are processed securely through Razorpay. We never see or store your card details.
+            {{ $t('subscription.razorpayHint') }}
           </div>
         </div>
       </v-card>
 
-      <div class="text-subtitle-1 font-weight-bold mb-3">Payment History</div>
+      <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('subscription.paymentHistory') }}</div>
       <v-card border>
         <div v-if="!payments.length" class="pa-8 text-center text-body-2 text-medium-emphasis">
-          No subscription payments yet.
+          {{ $t('subscription.noPaymentsYet') }}
         </div>
         <v-table v-else density="comfortable">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Plan</th>
-              <th>Period</th>
-              <th>Amount</th>
-              <th>Status</th>
+              <th>{{ $t('stockMovements.date') }}</th>
+              <th>{{ $t('subscription.plan') }}</th>
+              <th>{{ $t('subscription.period') }}</th>
+              <th>{{ $t('invoices.amount') }}</th>
+              <th>{{ $t('products.table.status') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -239,7 +240,7 @@ async function subscribe(plan) {
               <td>{{ payment.currency }} {{ payment.amount }}</td>
               <td>
                 <v-chip size="small" :color="payment.status === 'paid' ? 'success' : 'default'" variant="tonal">
-                  {{ payment.status }}
+                  {{ $t(`subscription.paymentStatus.${payment.status}`) }}
                 </v-chip>
               </td>
             </tr>

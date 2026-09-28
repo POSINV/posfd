@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiErrorMessage } from '@/api/client'
+
+const { t } = useI18n()
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -12,9 +15,11 @@ const props = defineProps({
   // What one committed unit is called in the result summary - a products
   // or opening-stock row creates one entity per row, but a historical
   // bills row is one line item of a possibly multi-line invoice.
-  itemLabel: { type: String, default: 'Row' },
+  itemLabel: { type: String, default: '' },
 })
 const emit = defineEmits(['imported'])
+
+const resolvedItemLabel = () => props.itemLabel || t('imports.row')
 
 const file = ref(null)
 const previewing = ref(false)
@@ -102,12 +107,12 @@ function errorSummary(errors) {
     <!-- Step 1: pick a file -->
     <template v-if="!preview && !commitResult">
       <v-btn variant="text" size="small" prepend-icon="mdi-download-outline" :loading="downloadingTemplate" class="mb-3" @click="downloadTemplate">
-        Download CSV Template
+        {{ $t('imports.downloadTemplate') }}
       </v-btn>
 
       <v-file-input
         v-model="file"
-        label="Choose a CSV file"
+        :label="$t('imports.chooseFile')"
         accept=".csv,text/csv"
         prepend-icon="mdi-file-upload-outline"
         show-size
@@ -117,24 +122,24 @@ function errorSummary(errors) {
       />
 
       <v-btn color="primary" :disabled="!file" :loading="previewing" prepend-icon="mdi-eye-outline" @click="runPreview">
-        Preview Import
+        {{ $t('imports.previewImport') }}
       </v-btn>
     </template>
 
     <!-- Step 2: review the preview, then commit -->
     <template v-else-if="preview">
       <div class="d-flex ga-4 mb-4 flex-wrap">
-        <v-chip color="default" variant="tonal">{{ preview.total }} rows</v-chip>
-        <v-chip color="success" variant="tonal">{{ preview.valid }} valid</v-chip>
-        <v-chip v-if="preview.invalid > 0" color="error" variant="tonal">{{ preview.invalid }} need fixing</v-chip>
+        <v-chip color="default" variant="tonal">{{ $t('imports.rowsCount', { count: preview.total }) }}</v-chip>
+        <v-chip color="success" variant="tonal">{{ $t('imports.validCount', { count: preview.valid }) }}</v-chip>
+        <v-chip v-if="preview.invalid > 0" color="error" variant="tonal">{{ $t('imports.needFixingCount', { count: preview.invalid }) }}</v-chip>
       </div>
 
       <v-table density="comfortable" class="mb-4" style="max-height: 360px; overflow-y: auto">
         <thead>
           <tr>
-            <th>Row</th>
+            <th>{{ $t('imports.row') }}</th>
             <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
-            <th>Status</th>
+            <th>{{ $t('products.table.status') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -142,11 +147,11 @@ function errorSummary(errors) {
             <td>{{ row.row_number }}</td>
             <td v-for="col in columns" :key="col.key">{{ row.fields[col.key] || '—' }}</td>
             <td>
-              <v-chip v-if="row.valid" size="small" color="success" variant="tonal">OK</v-chip>
+              <v-chip v-if="row.valid" size="small" color="success" variant="tonal">{{ $t('imports.ok') }}</v-chip>
               <v-tooltip v-else :text="errorSummary(row.errors)">
                 <template #activator="{ props: tooltipProps }">
                   <v-chip v-bind="tooltipProps" size="small" color="error" variant="tonal">
-                    {{ Object.keys(row.errors).length }} error(s)
+                    {{ $t('imports.errorsCount', { count: Object.keys(row.errors).length }) }}
                   </v-chip>
                 </template>
               </v-tooltip>
@@ -156,7 +161,7 @@ function errorSummary(errors) {
       </v-table>
 
       <div class="d-flex ga-2">
-        <v-btn variant="text" @click="startOver">Start Over</v-btn>
+        <v-btn variant="text" @click="startOver">{{ $t('imports.startOver') }}</v-btn>
         <v-btn
           color="primary"
           :disabled="preview.valid === 0"
@@ -164,7 +169,7 @@ function errorSummary(errors) {
           prepend-icon="mdi-check"
           @click="runCommit"
         >
-          Import {{ preview.valid }} Valid {{ itemLabel }}{{ preview.valid === 1 ? '' : 's' }}
+          {{ $t('imports.importValidCount', { count: preview.valid, item: resolvedItemLabel() }) }}
         </v-btn>
       </div>
     </template>
@@ -172,19 +177,19 @@ function errorSummary(errors) {
     <!-- Step 3: result -->
     <template v-else-if="commitResult">
       <v-alert type="success" variant="tonal" class="mb-4">
-        Imported {{ commitResult.created }} {{ itemLabel.toLowerCase() }}{{ commitResult.created === 1 ? '' : 's' }} successfully.
+        {{ $t('imports.importedSuccessfully', { count: commitResult.created, item: resolvedItemLabel() }) }}
       </v-alert>
 
       <template v-if="commitResult.failed_count > 0">
         <div class="text-body-2 font-weight-medium mb-2">
-          {{ commitResult.failed_count }} {{ itemLabel.toLowerCase() }}{{ commitResult.failed_count === 1 ? '' : 's' }} could not be imported:
+          {{ $t('imports.couldNotBeImported', { count: commitResult.failed_count, item: resolvedItemLabel() }) }}
         </div>
         <div v-for="f in commitResult.failed" :key="f.row_number" class="text-body-2 text-error mb-1">
-          Row {{ f.row_number }}: {{ errorSummary(f.errors) }}
+          {{ $t('imports.rowError', { number: f.row_number, error: errorSummary(f.errors) }) }}
         </div>
       </template>
 
-      <v-btn color="primary" class="mt-4" @click="startOver">Import Another File</v-btn>
+      <v-btn color="primary" class="mt-4" @click="startOver">{{ $t('imports.importAnotherFile') }}</v-btn>
     </template>
   </v-card>
 </template>
