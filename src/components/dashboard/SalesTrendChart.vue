@@ -52,12 +52,12 @@ const hovered = ref(null)
     <svg :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" class="chart-svg">
       <defs>
         <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#6366F1" />
-          <stop offset="100%" stop-color="#4F46E5" />
+          <stop offset="0%" style="stop-color: rgb(var(--v-theme-primary)); stop-opacity: 0.95" />
+          <stop offset="100%" style="stop-color: rgb(var(--v-theme-primary)); stop-opacity: 0.7" />
         </linearGradient>
         <linearGradient id="barGradientHover" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#818CF8" />
-          <stop offset="100%" stop-color="#6366F1" />
+          <stop offset="0%" style="stop-color: rgb(var(--v-theme-primary))" />
+          <stop offset="100%" style="stop-color: rgb(var(--v-theme-primary)); stop-opacity: 0.85" />
         </linearGradient>
       </defs>
 
@@ -66,7 +66,7 @@ const hovered = ref(null)
         :y1="height - paddingBottom"
         :x2="width"
         :y2="height - paddingBottom"
-        stroke="rgba(17,24,39,0.08)"
+        style="stroke: rgba(var(--v-border-color), var(--v-border-opacity))"
         stroke-width="1"
       />
 
@@ -114,7 +114,7 @@ const hovered = ref(null)
 
 .axis-label {
   font-size: 10px;
-  fill: rgba(17, 24, 39, 0.5);
+  fill: rgba(var(--v-theme-on-surface), 0.5);
   font-family: var(--font-sans);
 }
 

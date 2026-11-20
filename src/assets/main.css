@@ -9,8 +9,8 @@
 :root {
   --font-sans:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.06);
-  --shadow-lifted: 0 8px 24px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.06);
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-lifted: 0 12px 32px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.05);
   /* Standard "ease-out" curve used by Linear/Raycast-style interfaces -
      fast to start, gentle to settle. Prefer this over the browser's
      default `ease` everywhere motion is added. */
@@ -22,14 +22,120 @@ html,
 body,
 .v-application {
   font-family: var(--font-sans) !important;
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ---- Typography: tighter, more editorial headings (Linear-style). ---- */
+.v-application .text-h3,
 .v-application .text-h4,
-.v-application .text-h5,
-.v-application .text-h6 {
-  letter-spacing: -0.01em;
+.v-application .text-h5 {
+  letter-spacing: -0.022em !important;
+  line-height: 1.2;
+}
+
+.v-application .text-h6,
+.v-application .text-subtitle-1 {
+  letter-spacing: -0.012em !important;
+}
+
+.v-application h1.text-h5 {
+  font-size: 1.5rem !important;
+  font-weight: 650 !important;
+}
+
+.v-application .text-caption {
+  letter-spacing: 0.005em !important;
+}
+
+/* ---- Page containers: a calmer, centred reading width. ---- */
+.v-main > .v-container,
+.v-main .v-container:not(.v-container--fluid) {
+  max-width: 1240px;
+}
+
+/* ---- Cards: hairline borders, generous radius, no material shadow. ---- */
+.v-card {
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+}
+
+.v-card--border {
+  box-shadow: var(--shadow-soft);
+}
+
+.v-theme--darkTheme .v-card--border {
+  box-shadow: none;
+}
+
+.v-overlay__content > .v-card,
+.v-dialog > .v-overlay__content > .v-card {
+  border-radius: 14px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ---- Tables: Linear-like dense rows, quiet header, row hover. ---- */
+.v-table {
+  background: transparent !important;
+}
+
+.v-table > .v-table__wrapper > table > thead > tr > th {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--v-theme-on-surface), 0.5) !important;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  height: 40px !important;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr {
+  transition: background-color 0.12s var(--ease-standard);
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr:hover {
+  background: rgba(var(--v-theme-on-surface), 0.025);
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  font-size: 13.5px;
+}
+
+/* ---- Inputs: Pinterest-like soft fields that sharpen on focus. ---- */
+.v-field--variant-outlined .v-field__outline {
+  --v-field-border-opacity: 0.12;
+}
+
+.v-field--variant-outlined:hover .v-field__outline {
+  --v-field-border-opacity: 0.24;
+}
+
+.v-field--focused {
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.14);
+}
+
+/* ---- Chips: pill shaped, slightly bolder labels. ---- */
+.v-chip {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* ---- Keyboard hint (command palette, sidebar). ---- */
+.kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-border-color), 0.1);
+  margin-right: 2px;
 }
 
 /* Subtle, premium elevation used in place of Vuetify's default heavy
@@ -143,19 +249,19 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.15);
+  background: rgba(var(--v-theme-on-surface), 0.14);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.28);
+  background: rgba(var(--v-theme-on-surface), 0.26);
   background-clip: content-box;
 }
 
 ::selection {
-  background: rgba(79, 70, 229, 0.22);
+  background: rgba(var(--v-theme-primary), 0.24);
 }
 
 @media print {

@@ -233,11 +233,11 @@ function paymentColor(s) {
 }
 
 .stat-card--primary {
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.06), rgba(79, 70, 229, 0));
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0));
 }
 
 .stat-card--warning {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(217, 119, 6, 0));
+  background: linear-gradient(135deg, rgba(var(--v-theme-warning), 0.1), rgba(var(--v-theme-warning), 0));
 }
 
 .rank-badge {

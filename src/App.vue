@@ -6,7 +6,8 @@ const route = useRoute()
 </script>
 
 <template>
-  <v-app>
+  <!-- Printed invoices always render light, whatever the UI theme. -->
+  <v-app :theme="route.name === 'invoice-print' ? 'lightTheme' : undefined">
     <AppShell v-if="route.meta.layout === 'app'">
       <RouterView v-slot="{ Component, route: r }">
         <Transition name="page" mode="out-in">

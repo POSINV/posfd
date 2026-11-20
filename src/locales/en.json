@@ -656,5 +656,25 @@
     },
     "razorpayDisabled": "Online payments (Razorpay) are turned off in the {env} environment. They only work in staging and production.",
     "whatsappDisabled": "WhatsApp sending is turned off in the {env} environment. You can still manage templates, but no messages are sent - they only go out from staging and production."
+  },
+  "shell": {
+    "search": "Search or jump to…",
+    "commandPlaceholder": "Type a page or action…",
+    "noResults": "No matches",
+    "navigate": "to navigate",
+    "open": "to open",
+    "goTo": "Go to",
+    "actions": "Actions",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "heroTitle": "Run your whole shop from one calm workspace.",
+    "heroSubtitle": "Billing, stock, customers, offers and WhatsApp — all in one place, in your language.",
+    "groups": {
+      "workspace": "Workspace",
+      "catalog": "Catalog",
+      "insights": "Insights",
+      "growth": "Growth",
+      "account": "Account"
+    }
   }
 }
