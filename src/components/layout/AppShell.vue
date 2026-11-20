@@ -5,6 +5,7 @@ import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
+import { useAppConfigStore } from '@/stores/appConfig'
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher.vue'
 import TrialBanner from '@/components/subscription/TrialBanner.vue'
 
@@ -13,6 +14,7 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const subscription = useSubscriptionStore()
+const appConfig = useAppConfigStore()
 const { mobile } = useDisplay()
 
 const navItems = computed(() => [
@@ -29,7 +31,10 @@ const navItems = computed(() => [
   { key: 'offers', title: t('nav.offers'), icon: 'mdi-sale', to: { name: 'offers' } },
 ])
 
-onMounted(() => subscription.refresh())
+onMounted(() => {
+  subscription.refresh()
+  appConfig.load()
+})
 watch(() => auth.currentBusinessId, () => subscription.refresh())
 
 // The four most-used destinations on a phone, plus a "More" sheet for
@@ -67,6 +72,18 @@ async function logout() {
     </v-app-bar-title>
 
     <v-spacer />
+
+    <v-chip
+      v-if="appConfig.appEnv && appConfig.appEnv !== 'production'"
+      id="app-env-badge"
+      :color="appConfig.isLocal ? 'warning' : 'info'"
+      variant="tonal"
+      size="small"
+      label
+      class="mr-2 font-weight-bold"
+    >
+      {{ t(`integrations.envBadge.${appConfig.appEnv}`, appConfig.appEnv) }}
+    </v-chip>
 
     <LanguageSwitcher :compact="mobile" class="mr-1" />
 

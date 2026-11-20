@@ -648,5 +648,13 @@
   "notFound": {
     "pageNotFound": "Page not found",
     "goHome": "Go home"
+  },
+  "integrations": {
+    "envBadge": {
+      "local": "Local",
+      "staging": "Staging"
+    },
+    "razorpayDisabled": "Online payments (Razorpay) are turned off in the {env} environment. They only work in staging and production.",
+    "whatsappDisabled": "WhatsApp sending is turned off in the {env} environment. You can still manage templates, but no messages are sent - they only go out from staging and production."
   }
 }

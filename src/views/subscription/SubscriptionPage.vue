@@ -3,12 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
+import { useAppConfigStore } from '@/stores/appConfig'
 import { SubscriptionApi } from '@/api/subscription'
 import { apiErrorMessage } from '@/api/client'
 import { loadRazorpayCheckout } from '@/lib/razorpay'
 
 const auth = useAuthStore()
 const sub = useSubscriptionStore()
+const appConfig = useAppConfigStore()
 const { t } = useI18n()
 const payments = ref([])
 const loading = ref(true)
@@ -48,7 +50,7 @@ async function load() {
   loading.value = true
   errorMessage.value = ''
   try {
-    await sub.refresh()
+    await Promise.all([sub.refresh(), appConfig.load()])
     payments.value = await SubscriptionApi.payments()
   } catch (error) {
     errorMessage.value = apiErrorMessage(error)
@@ -62,6 +64,7 @@ function isCurrentPlan(plan) {
 }
 
 async function subscribe(plan) {
+  if (!appConfig.razorpayEnabled) return
   subscribingPlanId.value = plan.id
   errorMessage.value = ''
   successMessage.value = ''
@@ -153,6 +156,17 @@ async function subscribe(plan) {
       </v-card>
 
       <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('subscription.plans') }}</div>
+      <v-alert
+        v-if="!appConfig.razorpayEnabled"
+        id="razorpay-disabled-alert"
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        icon="mdi-credit-card-off-outline"
+        class="mb-4"
+      >
+        {{ $t('integrations.razorpayDisabled', { env: appConfig.appEnv }) }}
+      </v-alert>
       <v-row class="mb-6">
         <v-col v-for="plan in sub.plans" :key="plan.id" cols="12" sm="4">
           <v-card
@@ -193,7 +207,7 @@ async function subscribe(plan) {
               :color="isCurrentPlan(plan) ? 'default' : 'primary'"
               :variant="isCurrentPlan(plan) ? 'tonal' : 'flat'"
               :loading="subscribingPlanId === plan.id"
-              :disabled="subscribingPlanId !== null && subscribingPlanId !== plan.id"
+              :disabled="!appConfig.razorpayEnabled || (subscribingPlanId !== null && subscribingPlanId !== plan.id)"
               @click="subscribe(plan)"
             >
               {{ isCurrentPlan(plan) ? $t('subscription.renew') : $t('subscription.subscribe') }}

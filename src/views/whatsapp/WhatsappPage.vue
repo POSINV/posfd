@@ -3,8 +3,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { WhatsappApi } from '@/api/whatsapp'
 import { apiErrorMessage } from '@/api/client'
+import { useAppConfigStore } from '@/stores/appConfig'
 
 const { t } = useI18n()
+const appConfig = useAppConfigStore()
 const tab = ref('templates')
 const loading = ref(true)
 const errorMessage = ref('')
@@ -70,7 +72,10 @@ const campaignDialogOpen = ref(false)
 const campaignForm = ref(emptyCampaignForm())
 const campaignSaving = ref(false)
 
-onMounted(loadAll)
+onMounted(() => {
+  appConfig.load()
+  loadAll()
+})
 
 async function loadAll() {
   loading.value = true
@@ -196,6 +201,18 @@ async function viewStats(campaign) {
       {{ $t('whatsapp.subtitle') }}
     </p>
 
+    <v-alert
+      v-if="!appConfig.whatsappEnabled"
+      id="whatsapp-disabled-alert"
+      type="warning"
+      variant="tonal"
+      density="comfortable"
+      icon="mdi-message-off-outline"
+      class="mb-4"
+    >
+      {{ $t('integrations.whatsappDisabled', { env: appConfig.appEnv }) }}
+    </v-alert>
+
     <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">{{ errorMessage }}</v-alert>
 
     <div v-if="loading" class="d-flex justify-center py-12">
@@ -243,7 +260,7 @@ async function viewStats(campaign) {
               id="new-campaign-btn"
               color="primary"
               prepend-icon="mdi-plus"
-              :disabled="!approvedTemplates().length"
+              :disabled="!appConfig.whatsappEnabled || !approvedTemplates().length"
               @click="openCreateCampaign"
             >
               {{ $t('whatsapp.newCampaign') }}
