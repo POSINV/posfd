@@ -70,7 +70,18 @@ watch(() => auth.currentBusinessId, () => subscription.refresh())
 const bottomNavItems = computed(() => navItems.value.slice(0, 4))
 const moreNavItems = computed(() => navItems.value.slice(4))
 
-const drawerOpen = ref(false)
+// On desktop the drawer is permanent and must start (and stay) open; on a
+// phone it is a temporary overlay that starts closed. Keep the v-model in
+// sync with the breakpoint so a production build (where `mobile` is
+// already correct on first render) doesn't leave the desktop sidebar hidden.
+const drawerOpen = ref(!mobile.value)
+watch(mobile, (isMobile) => {
+  drawerOpen.value = !isMobile
+})
+
+function closeDrawerOnMobile() {
+  if (mobile.value) drawerOpen.value = false
+}
 const moreSheetOpen = ref(false)
 const paletteOpen = ref(false)
 
@@ -91,7 +102,7 @@ const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigat
 
 function go(to) {
   router.push(to)
-  drawerOpen.value = false
+  closeDrawerOnMobile()
   moreSheetOpen.value = false
 }
 
@@ -132,7 +143,7 @@ async function logout() {
             :to="item.to"
             class="nav-link"
             :class="{ 'is-active': isActive(item) }"
-            @click="drawerOpen = false"
+            @click="closeDrawerOnMobile"
           >
             <v-icon :icon="item.icon" size="18" class="nav-link-icon" />
             <span class="text-truncate">{{ item.title }}</span>
